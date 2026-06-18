@@ -11,30 +11,76 @@
   --black:#000;--white:#fff;--gray:#f4f4f4;--border:#000;
   --font:'Courier New',monospace;
 }
-body{font-family:var(--font);font-size:11px;background:var(--white);color:var(--black);min-height:100vh}
+/* Đẩy lề phải 40px để nhường chỗ cho thanh menu dọc siêu mỏng */
+body{font-family:var(--font);font-size:11px;background:var(--white);color:var(--black);min-height:100vh;padding-right:40px}
 
-/* NAV */
-.nav{display:flex;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;background:var(--white)}
-.nav-btn{padding:8px 18px;border:none;border-right:1px solid var(--border);background:transparent;font-family:var(--font);font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
-.nav-btn:hover{background:var(--gray)}
-.nav-btn.active{background:var(--black);color:var(--white)}
+/* NAV — Thanh dọc siêu mỏng cố định bên phải */
+.nav{
+  display:flex;
+  flex-direction:column;
+  border-left:1px solid var(--border);
+  position:fixed;
+  top:0;
+  right:0;
+  bottom:0;
+  width:40px; /* Độ rộng siêu mỏng */
+  z-index:200;
+  background:var(--white);
+}
 
-/* Cập nhật khung chứa logo cách đều 12px theo đúng tỉ lệ của các khối nội dung */
+/* Khung chứa logo cách đều ảnh đúng 12px (bằng lề trong của .g-block) */
 .nav-logo{
-  padding: 12px;
-  border-right: 1px solid var(--border);
+  padding: 12px; 
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-/* Thiết lập kích thước ảnh logo hiển thị cân đối trong thanh điều hướng */
+
+/* Ảnh tự động co giãn vừa vặn với khoảng trống còn lại bên trong khung 40px */
 .logo-img{
-  height: 20px;
-  width: auto;
+  width: 100%;
+  height: auto;
   display: block;
 }
 
-.nav-status{margin-left:auto;padding:8px 14px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#888;display:flex;align-items:center;gap:6px;border-left:1px solid var(--border)}
+/* Các nút bấm xoay dọc chữ dọc theo menu */
+.nav-btn{
+  padding:24px 0;
+  border:none;
+  border-bottom:1px solid var(--border);
+  background:transparent;
+  font-family:var(--font);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+  writing-mode:vertical-rl; /* Xoay dọc chữ */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+}
+.nav-btn:hover{background:var(--gray)}
+.nav-btn.active{background:var(--black);color:var(--white)}
+
+/* Trạng thái kết nối xếp theo chiều dọc ở dưới cùng */
+.nav-status{
+  margin-top:auto;
+  padding:20px 0;
+  font-size:9px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#888;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  border-top:1px solid var(--border);
+}
+.nav-status span {
+  writing-mode:vertical-rl; /* Xoay dọc chữ trạng thái */
+}
 .dot{width:6px;height:6px;border-radius:50%;background:#ccc}
 .dot.online{background:#22c55e}
 
@@ -52,7 +98,7 @@ body{font-family:var(--font);font-size:11px;background:var(--white);color:var(--
 .g-block{
   border-right:1px solid var(--border);
   border-bottom:1px solid var(--border);
-  padding:12px;
+  padding:12px; /* Khoảng cách chuẩn của hệ thống khối */
   position:relative;
   min-height:130px;
   overflow:hidden;
@@ -80,567 +126,4 @@ body{font-family:var(--font);font-size:11px;background:var(--white);color:var(--
 /* CHIPS */
 .chip{display:inline-block;border:1px solid var(--black);padding:2px 8px;font-size:9px;letter-spacing:.05em;margin:2px 2px 0 0;cursor:pointer;text-transform:uppercase;transition:all .1s}
 .chip:hover{background:var(--black);color:var(--white)}
-.g-block.dark .chip{border-color:var(--white);color:var(--white)}
-.g-block.dark .chip:hover{background:var(--white);color:var(--black)}
-
-/* LIST */
-.search-bar{border-bottom:1px solid var(--border);display:flex;align-items:center}
-.search-bar input,.search-bar select{border:none;border-right:1px solid var(--border);padding:8px 12px;font-family:var(--font);font-size:11px;background:var(--white);outline:none}
-.search-bar select{width:150px}
-.search-bar .slbl{padding:8px 12px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#999}
-.list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));border-left:1px solid var(--border);border-top:1px solid var(--border)}
-.l-card{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px;cursor:pointer;transition:background .1s}
-.l-card:hover{background:var(--gray)}
-.l-cat{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-bottom:5px}
-.l-name{font-size:14px;font-weight:bold;margin-bottom:7px;letter-spacing:.02em}
-.l-meta{font-size:10px;color:#666;line-height:1.8}
-.l-tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:3px}
-.l-tag{font-size:9px;border:1px solid #ccc;padding:1px 6px;letter-spacing:.05em;text-transform:uppercase;color:#888}
-.empty{padding:32px;color:#999;font-size:11px;grid-column:1/-1;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
-
-/* FORM */
-.form-wrap{max-width:700px;margin:0 auto;padding:24px 16px}
-.fsec{border:1px solid var(--border);margin-bottom:14px}
-.fsec-hd{background:var(--black);color:var(--white);padding:7px 12px;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
-.fbody{padding:14px}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.frow1{margin-bottom:10px}
-.flbl{display:block;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:3px}
-input[type=text],textarea,select{width:100%;border:1px solid var(--border);padding:7px 9px;font-family:var(--font);font-size:11px;background:var(--white);outline:none;border-radius:0;color:var(--black);resize:vertical}
-input:focus,textarea:focus,select:focus{background:var(--gray)}
-.save-btn{width:100%;padding:11px;background:var(--black);color:var(--white);border:none;font-family:var(--font);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .15s}
-.save-btn:hover{background:#222}
-.save-btn:disabled{background:#888;cursor:not-allowed}
-
-/* Block builder */
-.block-builder{border:1px solid #ddd;margin-bottom:10px}
-.block-builder-hd{background:var(--gray);padding:5px 10px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
-.block-builder-body{padding:10px}
-.add-block-btn{border:1px dashed #ccc;width:100%;padding:8px;background:transparent;font-family:var(--font);font-size:10px;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;margin-top:6px;color:#888;transition:all .15s}
-.add-block-btn:hover{border-color:var(--black);color:var(--black)}
-.rm-btn{border:none;background:transparent;cursor:pointer;font-size:12px;color:#888;padding:0 4px}
-.rm-btn:hover{color:var(--black)}
-
-/* Size + color picker */
-.size-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
-.sz-opt{border:1px solid #ccc;padding:3px 10px;font-size:9px;letter-spacing:.06em;cursor:pointer;text-transform:uppercase;transition:all .1s}
-.sz-opt:hover,.sz-opt.sel{background:var(--black);color:var(--white);border-color:var(--black)}
-.color-row{display:flex;gap:5px;margin-top:4px}
-.cl-opt{border:1px solid #ccc;padding:3px 10px;font-size:9px;letter-spacing:.06em;cursor:pointer;text-transform:uppercase;transition:all .1s}
-.cl-opt:hover,.cl-opt.sel{background:var(--black);color:var(--white);border-color:var(--black)}
-
-/* Back btn */
-.back-btn{display:inline-block;padding:6px 14px;border:1px solid var(--border);font-family:var(--font);font-size:9px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin:10px;background:transparent}
-.back-btn:hover{background:var(--black);color:var(--white)}
-
-/* Edit/Delete on detail */
-.detail-actions{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:0}
-.act-btn{padding:7px 16px;border:none;border-right:1px solid var(--border);background:transparent;font-family:var(--font);font-size:9px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
-.act-btn:hover{background:var(--gray)}
-.act-btn.danger:hover{background:#fee2e2;color:#991b1b}
-
-/* Loading */
-.loading{padding:24px;color:#999;font-size:11px;letter-spacing:.05em;text-transform:uppercase;text-align:center}
-
-/* Toast */
-#toast{position:fixed;bottom:20px;right:20px;background:var(--black);color:var(--white);padding:10px 18px;font-size:11px;letter-spacing:.05em;opacity:0;transition:opacity .2s;z-index:999;pointer-events:none}
-#toast.show{opacity:1}
-</style>
-</head>
-<body>
-
-<div id="toast"></div>
-
-<div class="nav">
-  <div class="nav-logo">
-    <img src="logo.jpg" alt="Logo" class="logo-img">
-  </div>
-  <button class="nav-btn active" id="nb-list" onclick="goView('list')">Thư viện</button>
-  <button class="nav-btn" id="nb-add" onclick="startAdd()">+ Thêm mới</button>
-  <button class="nav-btn" id="nb-det" onclick="goView('detail')" style="display:none">↩ Chi tiết</button>
-  <div class="nav-status"><div class="dot" id="status-dot"></div><span id="status-txt">Đang kết nối...</span></div>
-</div>
-
-<div class="view active" id="view-list">
-  <div class="search-bar">
-    <span class="slbl">Lọc:</span>
-    <select id="fcat" onchange="renderList()">
-      <option value="all">Tất cả</option>
-      <option value="ct">Công trình</option>
-      <option value="vl">Vật liệu</option>
-      <option value="cd">Chi tiết thi công</option>
-    </select>
-    <input type="text" id="fsearch" placeholder="Tìm kiếm..." oninput="renderList()" style="flex:1;border:none;border-right:1px solid var(--border)">
-  </div>
-  <div class="list-grid" id="list-grid"><div class="loading">Đang tải...</div></div>
-</div>
-
-<div class="view" id="view-detail">
-  <div style="display:flex;align-items:center;border-bottom:1px solid var(--border)">
-    <button class="back-btn" style="margin:0;border:none;border-right:1px solid var(--border)" onclick="goView('list')">← Quay lại</button>
-    <div class="detail-actions" style="border-bottom:none;flex:1">
-      <button class="act-btn" onclick="startEdit()">✎ Chỉnh sửa</button>
-      <button class="act-btn danger" onclick="deleteEntry()">✕ Xoá</button>
-    </div>
-  </div>
-  <div id="grid-canvas"></div>
-</div>
-
-<div class="view" id="view-add">
-  <div class="form-wrap">
-    <div id="form-mode-label" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-bottom:14px"></div>
-
-    <div class="fsec">
-      <div class="fsec-hd">Loại mục</div>
-      <div class="fbody">
-        <div class="frow1">
-          <label class="flbl">Chọn loại</label>
-          <select id="etype" onchange="toggleFormSections()">
-            <option value="ct">Công trình</option>
-            <option value="vl">Vật liệu</option>
-            <option value="cd">Chi tiết thi công</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div id="f-ct">
-      <div class="fsec"><div class="fsec-hd">Thông tin cơ bản</div><div class="fbody">
-        <div class="frow">
-          <div><label class="flbl">Tên công trình *</label><input type="text" id="ct-ten"></div>
-          <div><label class="flbl">KTS / Đơn vị thiết kế</label><input type="text" id="ct-kts"></div>
-        </div>
-        <div class="frow">
-          <div><label class="flbl">Năm hoàn thành</label><input type="text" id="ct-nam"></div>
-          <div><label class="flbl">Vị trí</label><input type="text" id="ct-vitri"></div>
-        </div>
-        <div class="frow">
-          <div><label class="flbl">Phong cách</label><input type="text" id="ct-pc"></div>
-          <div><label class="flbl">Diện tích (m²)</label><input type="text" id="ct-dt"></div>
-        </div>
-      </div></div>
-      <div class="fsec"><div class="fsec-hd">Nội dung nghiên cứu — các block</div><div class="fbody">
-        <div id="ct-blocks-wrap"></div>
-        <button type="button" class="add-block-btn" onclick="addBlock('ct')">+ Thêm block thông tin</button>
-      </div></div>
-      <div class="fsec"><div class="fsec-hd">Liên kết</div><div class="fbody">
-        <div class="frow1"><label class="flbl">Vật liệu liên quan (phân cách dấu phẩy)</label><input type="text" id="ct-vl"></div>
-        <div class="frow1"><label class="flbl">Chi tiết thi công liên quan</label><input type="text" id="ct-cd"></div>
-      </div></div>
-    </div>
-
-    <div id="f-vl" style="display:none">
-      <div class="fsec"><div class="fsec-hd">Thông tin vật liệu</div><div class="fbody">
-        <div class="frow">
-          <div><label class="flbl">Tên vật liệu *</label><input type="text" id="vl-ten"></div>
-          <div><label class="flbl">Loại</label><input type="text" id="vl-loai" placeholder="Kính, gỗ, bê tông..."></div>
-        </div>
-      </div></div>
-      <div class="fsec"><div class="fsec-hd">Nội dung nghiên cứu — các block</div><div class="fbody">
-        <div id="vl-blocks-wrap"></div>
-        <button type="button" class="add-block-btn" onclick="addBlock('vl')">+ Thêm block thông tin</button>
-      </div></div>
-      <div class="fsec"><div class="fsec-hd">Liên kết</div><div class="fbody">
-        <div class="frow1"><label class="flbl">Công trình đã dùng vật liệu này</label><input type="text" id="vl-ct"></div>
-      </div></div>
-    </div>
-
-    <div id="f-cd" style="display:none">
-      <div class="fsec"><div class="fsec-hd">Thông tin chi tiết thi công</div><div class="fbody">
-        <div class="frow">
-          <div><label class="flbl">Tên chi tiết *</label><input type="text" id="cd-ten"></div>
-          <div><label class="flbl">Vị trí áp dụng</label><input type="text" id="cd-vitri" placeholder="Mái, sàn, vách..."></div>
-        </div>
-      </div></div>
-      <div class="fsec"><div class="fsec-hd">Nội dung nghiên cứu — các block</div><div class="fbody">
-        <div id="cd-blocks-wrap"></div>
-        <button type="button" class="add-block-btn" onclick="addBlock('cd')">+ Thêm block thông tin</button>
-      </div></div>
-      <div class="fsec"><div class="fsec-hd">Liên kết</div><div class="fbody">
-        <div class="frow">
-          <div><label class="flbl">Vật liệu liên quan</label><input type="text" id="cd-vl"></div>
-          <div><label class="flbl">Công trình liên quan</label><input type="text" id="cd-ct"></div>
-        </div>
-      </div></div>
-    </div>
-
-    <button class="save-btn" id="save-btn" onclick="saveEntry()">Lưu vào thư viện →</button>
-  </div>
-</div>
-
-<script>
-/* ── SUPABASE ── */
-const SUPA_URL = 'https://mensqirmgksktrjdnyqi.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbnNxaXJtZ2tza3RyamRueXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NjMwMDQsImV4cCI6MjA5NzMzOTAwNH0.R78C7oDxHv3EXq8EH88PiD2-ibOJbuWo7B2o3-2R9ok';
-const { createClient } = supabase;
-const db = createClient(SUPA_URL, SUPA_KEY);
-
-/* ── STATE ── */
-let entries = [];
-let currentId = null;
-let editMode = false;
-const SIZES = ['S','M','L','XL'];
-const COLS  = {S:1,M:2,L:3,XL:4};
-const ROWS  = {S:1,M:1,L:2,XL:2};
-
-/* ── INIT ── */
-async function init(){
-  try {
-    const {data,error} = await db.from('entries').select('*').order('created_at',{ascending:false});
-    if(error) throw error;
-    entries = data || [];
-    setStatus(true);
-    renderList();
-  } catch(e){
-    setStatus(false);
-    toast('Lỗi kết nối Supabase: '+e.message);
-    renderList();
-  }
-}
-
-function setStatus(online){
-  document.getElementById('status-dot').className = 'dot'+(online?' online':'');
-  document.getElementById('status-txt').textContent = online?'Đã kết nối':'Offline';
-}
-
-/* ── TOAST ── */
-function toast(msg,duration=2500){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),duration);
-}
-
-/* ── VIEWS ── */
-function goView(v){
-  ['list','detail','add'].forEach(x=>{
-    document.getElementById('view-'+x).classList.toggle('active',x===v);
-    const nb=document.getElementById('nb-'+x);
-    if(nb) nb.classList.toggle('active',x===v);
-  });
-  const detBtn=document.getElementById('nb-det');
-  detBtn.style.display=v==='detail'?'':'none';
-  if(v==='list') renderList();
-}
-
-/* ── LIST ── */
-function catLabel(t){return t==='ct'?'Công trình':t==='vl'?'Vật liệu':'Chi tiết thi công'}
-
-function renderList(){
-  const cat=document.getElementById('fcat').value;
-  const q=(document.getElementById('fsearch').value||'').toLowerCase();
-  const grid=document.getElementById('list-grid');
-  const items=entries.filter(e=>(cat==='all'||e.type===cat)&&(!q||(e.ten||'').toLowerCase().includes(q)));
-  if(!items.length){
-    grid.innerHTML='<div class="empty">Chưa có dữ liệu. Nhấn "+ Thêm mới" để bắt đầu.</div>';
-    return;
-  }
-  grid.innerHTML=items.map(e=>{
-    const meta=e.meta||{};
-    const blocks=e.blocks||[];
-    const links=e.links||{};
-    let sub='';
-    if(e.type==='ct') sub=`${meta.kts||''} ${meta.kts&&meta.nam?'·':''} ${meta.nam||''} ${meta.vitri?'· '+meta.vitri:''}`.trim();
-    if(e.type==='vl') sub=`${meta.loai||''} ${blocks.length?'· '+blocks.map(b=>b.label).join(', '):''}`.trim();
-    if(e.type==='cd') sub=`${meta.vitri||''} ${blocks.length?'· '+blocks.map(b=>b.label).join(', '):''}`.trim();
-    const allLinks=[...(links.vl||'').split(','),...(links.cd||'').split(','),...(links.ct||'').split(',')].map(s=>s.trim()).filter(Boolean);
-    return `<div class="l-card" onclick="showDetail('${e.id}')">
-      <div class="l-cat">${catLabel(e.type)}</div>
-      <div class="l-name">${e.ten}</div>
-      <div class="l-meta">${sub}</div>
-      ${allLinks.length?`<div class="l-tags">${allLinks.slice(0,4).map(l=>`<span class="l-tag">${l}</span>`).join('')}</div>`:''}
-    </div>`;
-  }).join('');
-}
-
-/* ── DETAIL ── */
-function showDetail(id){
-  const e=entries.find(x=>x.id===id);
-  if(!e) return;
-  currentId=id;
-  const meta=e.meta||{};
-  const blocks=e.blocks||[];
-  const links=e.links||{};
-  let html='';
-
-  /* Info block — always col 1 */
-  let infoBody='';
-  if(e.type==='ct'){
-    infoBody=[
-      meta.kts&&`KTS: ${meta.kts}`,
-      meta.vitri&&`Vị trí: ${meta.vitri}`,
-      meta.nam&&`Năm: ${meta.nam}`,
-      meta.pc&&`Phong cách: ${meta.pc}`,
-      meta.dt&&`Diện tích: ${meta.dt} m²`
-    ].filter(Boolean).join('<br>');
-  } else if(e.type==='vl'){
-    infoBody=`Loại: ${meta.loai||'—'}`;
-  } else {
-    infoBody=`Vị trí áp dụng: ${meta.vitri||'—'}`;
-  }
-
-  html+=`<div class="g-block dark sc1 sr1" style="min-height:160px">
-    <div class="blk-label">${catLabel(e.type)}</div>
-    <div class="blk-title">${e.ten}</div>
-    <div class="blk-body" style="color:#aaa;line-height:2">${infoBody}</div>
-  </div>`;
-
-  /* Content blocks */
-  blocks.forEach(b=>{
-    const sc=COLS[b.size]||1;
-    const sr=ROWS[b.size]||1;
-    const dark=b.dark?'dark':'light';
-    html+=`<div class="g-block ${dark} sc${sc} sr${sr}" data-bid="${b.id}" style="min-height:${sr*130}px">
-      <div class="blk-label">${b.label}</div>
-      <div class="blk-body">${b.body}</div>
-      <div class="blk-controls">
-        <button class="ctrl-btn" title="Thu hẹp" onclick="resizeBlock('${e.id}','${b.id}',-1)">◂</button>
-        <button class="ctrl-btn" title="Mở rộng" onclick="resizeBlock('${e.id}','${b.id}',1)">▸</button>
-        <button class="ctrl-btn" title="Đảo màu" onclick="flipColor('${e.id}','${b.id}')">◐</button>
-      </div>
-    </div>`;
-  });
-
-  /* Links row */
-  const vlArr=(links.vl||'').split(',').map(s=>s.trim()).filter(Boolean);
-  const cdArr=(links.cd||'').split(',').map(s=>s.trim()).filter(Boolean);
-  const ctArr=(links.ct||'').split(',').map(s=>s.trim()).filter(Boolean);
-  const allChips=[
-    ...vlArr.map(v=>`<span class="chip" onclick="goLinked('${v}','vl')">${v} →</span>`),
-    ...cdArr.map(v=>`<span class="chip" onclick="goLinked('${v}','cd')">${v} →</span>`),
-    ...ctArr.map(v=>`<span class="chip" onclick="goLinked('${v}','ct')">${v} →</span>`)
-  ];
-  if(allChips.length){
-    html+=`<div class="g-block light sc4" style="min-height:60px">
-      <div class="blk-label">Liên kết</div>
-      <div style="margin-top:6px">${allChips.join('')}</div>
-    </div>`;
-  }
-
-  document.getElementById('grid-canvas').innerHTML=html;
-  goView('detail');
-}
-
-/* ── RESIZE / FLIP ── */
-const SKEYS=['S','M','L','XL'];
-async function resizeBlock(eid,bid,dir){
-  const e=entries.find(x=>x.id===eid);
-  const b=(e.blocks||[]).find(x=>x.id===bid);
-  if(!b) return;
-  const idx=Math.max(0,Math.min(3,SKEYS.indexOf(b.size||'M')+dir));
-  b.size=SKEYS[idx];
-  await db.from('entries').update({blocks:e.blocks}).eq('id',eid);
-  showDetail(eid);
-}
-async function flipColor(eid,bid){
-  const e=entries.find(x=>x.id===eid);
-  const b=(e.blocks||[]).find(x=>x.id===bid);
-  if(!b) return;
-  b.dark=!b.dark;
-  await db.from('entries').update({blocks:e.blocks}).eq('id',eid);
-  showDetail(eid);
-}
-
-/* ── LINKED NAV ── */
-function goLinked(name,type){
-  const found=entries.find(e=>e.type===type&&(e.ten||'').toLowerCase().includes(name.toLowerCase()));
-  if(found) showDetail(found.id);
-  else toast(`"${name}" chưa có trong thư viện`);
-}
-
-/* ── FORM TOGGLE ── */
-function toggleFormSections(){
-  const t=document.getElementById('etype').value;
-  ['ct','vl','cd'].forEach(x=>document.getElementById('f-'+x).style.display=x===t?'':'none');
-}
-
-/* ── BLOCK BUILDER ── */
-function addBlock(prefix,data={}){
-  const wrap=document.getElementById(`${prefix}-blocks-wrap`);
-  const uid='blk-'+Date.now()+'-'+Math.random().toString(36).slice(2,5);
-  const div=document.createElement('div');
-  div.className='block-builder';
-  div.dataset.uid=uid;
-  div.innerHTML=`
-    <div class="block-builder-hd">
-      <span>Block thông tin</span>
-      <button type="button" class="rm-btn" onclick="this.closest('.block-builder').remove()">✕</button>
-    </div>
-    <div class="block-builder-body">
-      <div class="frow">
-        <div>
-          <label class="flbl">Nhãn block</label>
-          <input type="text" class="blk-label-inp" value="${data.label||''}" placeholder="Ngoại thất, Bài học...">
-        </div>
-        <div>
-          <label class="flbl">Kích cỡ</label>
-          <div class="size-row">
-            ${SKEYS.map(s=>`<span class="sz-opt${(data.size||'M')===s?' sel':''}" onclick="pickSz(this,'${uid}')">${s}</span>`).join('')}
-          </div>
-          <input type="hidden" class="blk-size-inp" value="${data.size||'M'}">
-        </div>
-      </div>
-      <div class="frow1">
-        <label class="flbl">Màu nền</label>
-        <div class="color-row">
-          <span class="cl-opt${data.dark?'':' sel'}" onclick="pickCl(this,'${uid}',false)">Trắng</span>
-          <span class="cl-opt${data.dark?' sel':''}" onclick="pickCl(this,'${uid}',true)">Đen</span>
-        </div>
-        <input type="hidden" class="blk-dark-inp" value="${data.dark?'1':'0'}">
-      </div>
-      <div class="frow1">
-        <label class="flbl">Nội dung</label>
-        <textarea class="blk-body-inp" rows="3">${data.body||''}</textarea>
-      </div>
-    </div>`;
-  wrap.appendChild(div);
-}
-
-function pickSz(el,uid){
-  const wrap=document.querySelector(`[data-uid="${uid}"]`);
-  wrap.querySelectorAll('.sz-opt').forEach(x=>x.classList.remove('sel'));
-  el.classList.add('sel');
-  wrap.querySelector('.blk-size-inp').value=el.textContent;
-}
-function pickCl(el,uid,dark){
-  const wrap=document.querySelector(`[data-uid="${uid}"]`);
-  wrap.querySelectorAll('.cl-opt').forEach(x=>x.classList.remove('sel'));
-  el.classList.add('sel');
-  wrap.querySelector('.blk-dark-inp').value=dark?'1':'0';
-}
-
-function collectBlocks(prefix){
-  return [...document.querySelectorAll(`#${prefix}-blocks-wrap .block-builder`)].map(div=>({
-    id:'b'+Date.now()+Math.random().toString(36).slice(2,5),
-    label:div.querySelector('.blk-label-inp').value.trim(),
-    body:div.querySelector('.blk-body-inp').value.trim(),
-    size:div.querySelector('.blk-size-inp').value||'M',
-    dark:div.querySelector('.blk-dark-inp').value==='1'
-  })).filter(b=>b.label||b.body);
-}
-
-/* ── SAVE ── */
-async function saveEntry(){
-  const btn=document.getElementById('save-btn');
-  btn.disabled=true;
-  btn.textContent='Đang lưu...';
-  const type=document.getElementById('etype').value;
-  let ten='',meta={},blocks=[],links={};
-
-  if(type==='ct'){
-    ten=document.getElementById('ct-ten').value.trim();
-    meta={kts:document.getElementById('ct-kts').value.trim(),nam:document.getElementById('ct-nam').value.trim(),vitri:document.getElementById('ct-vitri').value.trim(),pc:document.getElementById('ct-pc').value.trim(),dt:document.getElementById('ct-dt').value.trim()};
-    blocks=collectBlocks('ct');
-    links={vl:document.getElementById('ct-vl').value.trim(),cd:document.getElementById('ct-cd').value.trim()};
-  } else if(type==='vl'){
-    ten=document.getElementById('vl-ten').value.trim();
-    meta={loai:document.getElementById('vl-loai').value.trim()};
-    blocks=collectBlocks('vl');
-    links={ct:document.getElementById('vl-ct').value.trim()};
-  } else {
-    ten=document.getElementById('cd-ten').value.trim();
-    meta={vitri:document.getElementById('cd-vitri').value.trim()};
-    blocks=collectBlocks('cd');
-    links={vl:document.getElementById('cd-vl').value.trim(),ct:document.getElementById('cd-ct').value.trim()};
-  }
-
-  if(!ten){toast('Chưa nhập tên!');btn.disabled=false;btn.textContent='Lưu vào thư viện →';return;}
-
-  try {
-    if(editMode && currentId){
-      const {error}=await db.from('entries').update({type,ten,meta,blocks,links}).eq('id',currentId);
-      if(error) throw error;
-      const idx=entries.findIndex(x=>x.id===currentId);
-      if(idx>-1) entries[idx]={...entries[idx],type,ten,meta,blocks,links};
-      toast('Đã cập nhật ✓');
-      showDetail(currentId);
-    } else {
-      const id='e'+Date.now();
-      const {error}=await db.from('entries').insert({id,type,ten,meta,blocks,links});
-      if(error) throw error;
-      entries.unshift({id,type,ten,meta,blocks,links});
-      toast('Đã lưu ✓');
-      resetForm();
-      goView('list');
-    }
-  } catch(e){
-    toast('Lỗi: '+e.message);
-  }
-  btn.disabled=false;
-  btn.textContent='Lưu vào thư viện →';
-}
-
-/* ── EDIT ── */
-function startAdd(){
-  editMode=false;
-  resetForm();
-  document.getElementById('form-mode-label').textContent='Thêm mục mới';
-  goView('add');
-}
-
-function startEdit(){
-  const e=entries.find(x=>x.id===currentId);
-  if(!e) return;
-  editMode=true;
-  resetForm();
-  document.getElementById('form-mode-label').textContent='Chỉnh sửa mục';
-  document.getElementById('etype').value=e.type;
-  toggleFormSections();
-  const meta=e.meta||{};
-  const links=e.links||{};
-  if(e.type==='ct'){
-    document.getElementById('ct-ten').value=e.ten||'';
-    document.getElementById('ct-kts').value=meta.kts||'';
-    document.getElementById('ct-nam').value=meta.nam||'';
-    document.getElementById('ct-vitri').value=meta.vitri||'';
-    document.getElementById('ct-pc').value=meta.pc||'';
-    document.getElementById('ct-dt').value=meta.dt||'';
-    document.getElementById('ct-vl').value=links.vl||'';
-    document.getElementById('ct-cd').value=links.cd||'';
-    (e.blocks||[]).forEach(b=>addBlock('ct',b));
-  } else if(e.type==='vl'){
-    document.getElementById('vl-ten').value=e.ten||'';
-    document.getElementById('vl-loai').value=meta.loai||'';
-    document.getElementById('vl-ct').value=links.ct||'';
-    (e.blocks||[]).forEach(b=>addBlock('vl',b));
-  } else {
-    document.getElementById('cd-ten').value=e.ten||'';
-    document.getElementById('cd-vitri').value=meta.vitri||'';
-    document.getElementById('cd-vl').value=links.vl||'';
-    document.getElementById('cd-ct').value=links.ct||'';
-    (e.blocks||[]).forEach(b=>addBlock('cd',b));
-  }
-  goView('add');
-}
-
-/* ── DELETE ── */
-async function deleteEntry(){
-  if(!confirm('Xoá mục này? Không thể hoàn tác.')) return;
-  try {
-    const {error}=await db.from('entries').delete().eq('id',currentId);
-    if(error) throw error;
-    entries=entries.filter(x=>x.id!==currentId);
-    currentId=null;
-    toast('Đã xoá');
-    goView('list');
-  } catch(e){
-    toast('Lỗi xoá: '+e.message);
-  }
-}
-
-/* ── RESET FORM ── */
-function resetForm(){
-  ['ct-ten','ct-kts','ct-nam','ct-vitri','ct-pc','ct-dt','ct-vl','ct-cd',
-   'vl-ten','vl-loai','vl-ct','cd-ten','cd-vitri','cd-vl','cd-ct']
-   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['ct','vl','cd'].forEach(p=>{
-    const w=document.getElementById(`${p}-blocks-wrap`);
-    if(w) w.innerHTML='';
-  });
-  document.getElementById('etype').value='ct';
-  toggleFormSections();
-}
-
-init();
-</script>
-</body>
-</html>
+.g-block.dark .chip{border-color:var(--white);color
