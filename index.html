@@ -5,26 +5,64 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CHOA — Knowledge Base</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --black:#000;--white:#fff;--gray:#f4f4f4;--border:#000;
-  --font:'Be Vietnam Pro', sans-serif; /* Đổi sang font Be Vietnam Pro toàn trang */
+  --font:'Courier New',monospace;
 }
-body{font-family:var(--font);font-size:11px;background:var(--white);color:var(--black);min-height:100vh}
+/* Thêm padding-right bằng chiều rộng menu để nội dung không bị đè lên */
+body{font-family:var(--font);font-size:11px;background:var(--white);color:var(--black);min-height:100vh;padding-right:160px}
 
-/* NAV */
-.nav{display:flex;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;background:var(--white)}
-.nav-btn{padding:8px 18px;border:none;border-right:1px solid var(--border);background:transparent;font-family:var(--font);font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+/* NAV — Chuyển thành thanh dọc cố định bên phải */
+.nav{
+  display:flex;
+  flex-direction:column; /* Xếp dọc các phần tử */
+  border-left:1px solid var(--border); /* Đổi border sang bên trái */
+  position:fixed; /* Cố định vị trí */
+  top:0;
+  right:0;
+  bottom:0;
+  width:160px; /* Chiều rộng thanh menu */
+  z-index:200;
+  background:var(--white);
+}
+.nav-btn{
+  padding:12px 16px;
+  border:none;
+  border-bottom:1px solid var(--border); /* Đổi border sang cạnh dưới */
+  background:transparent;
+  font-family:var(--font);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+  white-space:nowrap;
+  text-align:left; /* Căn lề trái chữ trong nút */
+}
 .nav-btn:hover{background:var(--gray)}
 .nav-btn.active{background:var(--black);color:var(--white)}
-.nav-logo{padding:8px 16px;border-right:1px solid var(--border);font-size:12px;font-weight:bold;letter-spacing:.15em;display:flex;align-items:center}
-.nav-status{margin-left:auto;padding:8px 14px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#888;display:flex;align-items:center;gap:6px;border-left:1px solid var(--border)}
+.nav-logo{
+  padding:16px;
+  border-bottom:1px solid var(--border); /* Đổi border sang cạnh dưới */
+  font-size:12px;
+  font-weight:bold;
+  letter-spacing:.15em;
+  display:flex;
+  align-items:center;
+}
+.nav-status{
+  margin-top:auto; /* Đẩy trạng thái xuống dưới cùng menu dọc */
+  padding:12px 16px;
+  font-size:9px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#888;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  border-top:1px solid var(--border); /* Đổi border lên cạnh trên */
+}
 .dot{width:6px;height:6px;border-radius:50%;background:#ccc}
 .dot.online{background:#22c55e}
 
@@ -132,8 +170,8 @@ input:focus,textarea:focus,select:focus{background:var(--gray)}
 /* Loading */
 .loading{padding:24px;color:#999;font-size:11px;letter-spacing:.05em;text-transform:uppercase;text-align:center}
 
-/* Toast */
-#toast{position:fixed;bottom:20px;right:20px;background:var(--black);color:var(--white);padding:10px 18px;font-size:11px;letter-spacing:.05em;opacity:0;transition:opacity .2s;z-index:999;pointer-events:none}
+/* Toast — Dịch qua trái một chút để không bị menu đè lên */
+#toast{position:fixed;bottom:20px;right:180px;background:var(--black);color:var(--white);padding:10px 18px;font-size:11px;letter-spacing:.05em;opacity:0;transition:opacity .2s;z-index:999;pointer-events:none}
 #toast.show{opacity:1}
 </style>
 </head>
@@ -415,4 +453,220 @@ async function resizeBlock(eid,bid,dir){
   const b=(e.blocks||[]).find(x=>x.id===bid);
   if(!b) return;
   const idx=Math.max(0,Math.min(3,SKEYS.indexOf(b.size||'M')+dir));
-  b.size=
+  b.size=SKEYS[idx];
+  await db.from('entries').update({blocks:e.blocks}).eq('id',eid);
+  showDetail(eid);
+}
+async function flipColor(eid,bid){
+  const e=entries.find(x=>x.id===eid);
+  const b=(e.blocks||[]).find(x=>x.id===bid);
+  if(!b) return;
+  b.dark=!b.dark;
+  await db.from('entries').update({blocks:e.blocks}).eq('id',eid);
+  showDetail(eid);
+}
+
+/* ── LINKED NAV ── */
+function goLinked(name,type){
+  const found=entries.find(e=>e.type===type&&(e.ten||'').toLowerCase().includes(name.toLowerCase()));
+  if(found) showDetail(found.id);
+  else toast(`"${name}" chưa có trong thư viện`);
+}
+
+/* ── FORM TOGGLE ── */
+function toggleFormSections(){
+  const t=document.getElementById('etype').value;
+  ['ct','vl','cd'].forEach(x=>document.getElementById('f-'+x).style.display=x===t?'':'none');
+}
+
+/* ── BLOCK BUILDER ── */
+function addBlock(prefix,data={}){
+  const wrap=document.getElementById(`${prefix}-blocks-wrap`);
+  const uid='blk-'+Date.now()+'-'+Math.random().toString(36).slice(2,5);
+  const div=document.createElement('div');
+  div.className='block-builder';
+  div.dataset.uid=uid;
+  div.innerHTML=`
+    <div class="block-builder-hd">
+      <span>Block thông tin</span>
+      <button type="button" class="rm-btn" onclick="this.closest('.block-builder').remove()">✕</button>
+    </div>
+    <div class="block-builder-body">
+      <div class="frow">
+        <div>
+          <label class="flbl">Nhãn block</label>
+          <input type="text" class="blk-label-inp" value="${data.label||''}" placeholder="Ngoại thất, Bài học...">
+        </div>
+        <div>
+          <label class="flbl">Kích cỡ</label>
+          <div class="size-row">
+            ${SKEYS.map(s=>`<span class="sz-opt${(data.size||'M')===s?' sel':''}" onclick="pickSz(this,'${uid}')">${s}</span>`).join('')}
+          </div>
+          <input type="hidden" class="blk-size-inp" value="${data.size||'M'}">
+        </div>
+      </div>
+      <div class="frow1">
+        <label class="flbl">Màu nền</label>
+        <div class="color-row">
+          <span class="cl-opt${data.dark?'':' sel'}" onclick="pickCl(this,'${uid}',false)">Trắng</span>
+          <span class="cl-opt${data.dark?' sel':''}" onclick="pickCl(this,'${uid}',true)">Đen</span>
+        </div>
+        <input type="hidden" class="blk-dark-inp" value="${data.dark?'1':'0'}">
+      </div>
+      <div class="frow1">
+        <label class="flbl">Nội dung</label>
+        <textarea class="blk-body-inp" rows="3">${data.body||''}</textarea>
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+}
+
+function pickSz(el,uid){
+  const wrap=document.querySelector(`[data-uid="${uid}"]`);
+  wrap.querySelectorAll('.sz-opt').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  wrap.querySelector('.blk-size-inp').value=el.textContent;
+}
+function pickCl(el,uid,dark){
+  const wrap=document.querySelector(`[data-uid="${uid}"]`);
+  wrap.querySelectorAll('.cl-opt').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  wrap.querySelector('.blk-dark-inp').value=dark?'1':'0';
+}
+
+function collectBlocks(prefix){
+  return [...document.querySelectorAll(`#${prefix}-blocks-wrap .block-builder`)].map(div=>({
+    id:'b'+Date.now()+Math.random().toString(36).slice(2,5),
+    label:div.querySelector('.blk-label-inp').value.trim(),
+    body:div.querySelector('.blk-body-inp').value.trim(),
+    size:div.querySelector('.blk-size-inp').value||'M',
+    dark:div.querySelector('.blk-dark-inp').value==='1'
+  })).filter(b=>b.label||b.body);
+}
+
+/* ── SAVE ── */
+async function saveEntry(){
+  const btn=document.getElementById('save-btn');
+  btn.disabled=true;
+  btn.textContent='Đang lưu...';
+  const type=document.getElementById('etype').value;
+  let ten='',meta={},blocks=[],links={};
+
+  if(type==='ct'){
+    ten=document.getElementById('ct-ten').value.trim();
+    meta={kts:document.getElementById('ct-kts').value.trim(),nam:document.getElementById('ct-nam').value.trim(),vitri:document.getElementById('ct-vitri').value.trim(),pc:document.getElementById('ct-pc').value.trim(),dt:document.getElementById('ct-dt').value.trim()};
+    blocks=collectBlocks('ct');
+    links={vl:document.getElementById('ct-vl').value.trim(),cd:document.getElementById('ct-cd').value.trim()};
+  } else if(type==='vl'){
+    ten=document.getElementById('vl-ten').value.trim();
+    meta={loai:document.getElementById('vl-loai').value.trim()};
+    blocks=collectBlocks('vl');
+    links={ct:document.getElementById('vl-ct').value.trim()};
+  } else {
+    ten=document.getElementById('cd-ten').value.trim();
+    meta={vitri:document.getElementById('cd-vitri').value.trim()};
+    blocks=collectBlocks('cd');
+    links={vl:document.getElementById('cd-vl').value.trim(),ct:document.getElementById('cd-ct').value.trim()};
+  }
+
+  if(!ten){toast('Chưa nhập tên!');btn.disabled=false;btn.textContent='Lưu vào thư viện →';return;}
+
+  try {
+    if(editMode && currentId){
+      const {error}=await db.from('entries').update({type,ten,meta,blocks,links}).eq('id',currentId);
+      if(error) throw error;
+      const idx=entries.findIndex(x=>x.id===currentId);
+      if(idx>-1) entries[idx]={...entries[idx],type,ten,meta,blocks,links};
+      toast('Đã cập nhật ✓');
+      showDetail(currentId);
+    } else {
+      const id='e'+Date.now();
+      const {error}=await db.from('entries').insert({id,type,ten,meta,blocks,links});
+      if(error) throw error;
+      entries.unshift({id,type,ten,meta,blocks,links});
+      toast('Đã lưu ✓');
+      resetForm();
+      goView('list');
+    }
+  } catch(e){
+    toast('Lỗi: '+e.message);
+  }
+  btn.disabled=false;
+  btn.textContent='Lưu vào thư viện →';
+}
+
+/* ── EDIT ── */
+function startAdd(){
+  editMode=false;
+  resetForm();
+  document.getElementById('form-mode-label').textContent='Thêm mục mới';
+  goView('add');
+}
+
+function startEdit(){
+  const e=entries.find(x=>x.id===currentId);
+  if(!e) return;
+  editMode=true;
+  resetForm();
+  document.getElementById('form-mode-label').textContent='Chỉnh sửa mục';
+  document.getElementById('etype').value=e.type;
+  toggleFormSections();
+  const meta=e.meta||{};
+  const links=e.links||{};
+  if(e.type==='ct'){
+    document.getElementById('ct-ten').value=e.ten||'';
+    document.getElementById('ct-kts').value=meta.kts||'';
+    document.getElementById('ct-nam').value=meta.nam||'';
+    document.getElementById('ct-vitri').value=meta.vitri||'';
+    document.getElementById('ct-pc').value=meta.pc||'';
+    document.getElementById('ct-dt').value=meta.dt||'';
+    document.getElementById('ct-vl').value=links.vl||'';
+    document.getElementById('ct-cd').value=links.cd||'';
+    (e.blocks||[]).forEach(b=>addBlock('ct',b));
+  } else if(e.type==='vl'){
+    document.getElementById('vl-ten').value=e.ten||'';
+    document.getElementById('vl-loai').value=meta.loai||'';
+    document.getElementById('vl-ct').value=links.ct||'';
+    (e.blocks||[]).forEach(b=>addBlock('vl',b));
+  } else {
+    document.getElementById('cd-ten').value=e.ten||'';
+    document.getElementById('cd-vitri').value=meta.vitri||'';
+    document.getElementById('cd-vl').value=links.vl||'';
+    document.getElementById('cd-ct').value=links.ct||'';
+    (e.blocks||[]).forEach(b=>addBlock('cd',b));
+  }
+  goView('add');
+}
+
+/* ── DELETE ── */
+async function deleteEntry(){
+  if(!confirm('Xoá mục này? Không thể hoàn tác.')) return;
+  try {
+    const {error}=await db.from('entries').delete().eq('id',currentId);
+    if(error) throw error;
+    entries=entries.filter(x=>x.id!==currentId);
+    currentId=null;
+    toast('Đã xoá');
+    goView('list');
+  } catch(e){
+    toast('Lỗi xoá: '+e.message);
+  }
+}
+
+/* ── RESET FORM ── */
+function resetForm(){
+  ['ct-ten','ct-kts','ct-nam','ct-vitri','ct-pc','ct-dt','ct-vl','ct-cd',
+   'vl-ten','vl-loai','vl-ct','cd-ten','cd-vitri','cd-vl','cd-ct']
+   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['ct','vl','cd'].forEach(p=>{
+    const w=document.getElementById(`${p}-blocks-wrap`);
+    if(w) w.innerHTML='';
+  });
+  document.getElementById('etype').value='ct';
+  toggleFormSections();
+}
+
+init();
+</script>
+</body>
+</html>
