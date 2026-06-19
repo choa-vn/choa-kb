@@ -3,970 +3,639 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CHOA — Architectural Knowledge Base</title>
+<title>CHOA — Knowledge Base</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Nhúng font chữ Be Vietnam Pro theo yêu cầu -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800;900&display=swap" rel="stylesheet">
-
 <style>
-/* ĐỊNH NGHĨA HỆ THỐNG BIẾN CHUẨN THEO YÊU CẦU */
-:root {
-  --font-main: 'Be Vietnam Pro', sans-serif;
-  
-  /* Cỡ chữ chỉ định */
-  --sz-10: 10px;
-  --sz-15: 15px;
-  --sz-20: 20px;
-  --sz-30: 30px;
-  
-  /* Khoảng cách quy định */
-  --sp-3: 3px;
-  --sp-6: 6px;
-  --sp-12: 12px;
-  --sp-15: 15px;
-  
-  /* Bảng màu Brutalist tương phản cao */
-  --c-black: #000000;
-  --c-white: #ffffff;
-  --c-dark-gray: #1a1a1a;
-  --c-med-gray: #333333;
-  --c-light-gray: #cccccc;
-  --border-white: 1px solid #ffffff;
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --black:#000;--white:#fff;--gray:#f4f4f4;--border:#000;
+  --font:'Courier New',monospace;
 }
+body{font-family:var(--font);font-size:11px;background:var(--white);color:var(--black);min-height:100vh}
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* NAV */
+.nav{display:flex;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;background:var(--white);height:36px}
+.nav-btn{padding:8px 18px;border:none;border-right:1px solid var(--border);background:transparent;font-family:var(--font);font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.nav-btn:hover{background:var(--gray)}
+.nav-btn.active{background:var(--black);color:var(--white)}
+.nav-logo{padding:8px 16px;border-right:1px solid var(--border);font-size:12px;font-weight:bold;letter-spacing:.15em;display:flex;align-items:center}
+.nav-status{margin-left:auto;padding:8px 14px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#888;display:flex;align-items:center;gap:6px;border-left:1px solid var(--border)}
+.dot{width:6px;height:6px;border-radius:50%;background:#ccc}
+.dot.online{background:#22c55e}
 
-body {
-  font-family: var(--font-main);
-  background-color: var(--c-black);
-  color: var(--c-white);
-  height: 100vh;
-  overflow: hidden; /* Khóa cuộn trang tuyệt đối để cố định khung */
-  padding-right: 40px; /* Dành chỗ cho menu siêu mỏng biên phải */
-}
+/* VIEWS */
+.view{display:none}
+.view.active{display:block}
 
-/* NAV — THANH MENU CỐ ĐỊNH BÊN PHẢI */
-.nav {
-  display: flex;
-  flex-direction: column;
-  border-left: var(--border-white);
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 40px;
-  z-index: 500;
-  background: var(--c-black);
-}
-.nav-logo {
-  padding: var(--sp-12);
-  border-bottom: var(--border-white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.logo-img {
-  width: 100%;
-  height: auto;
-  display: block;
-  filter: invert(1);
-}
-.nav-btn {
-  padding: 24px 0;
-  border: none;
-  border-bottom: var(--border-white);
-  background: transparent;
-  font-family: var(--font-main);
-  font-size: var(--sz-10);
-  font-weight: 600;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--c-white);
-  cursor: pointer;
-  writing-mode: vertical-rl;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-.nav-btn:hover { background: var(--c-dark-gray); }
-.nav-btn.active { background: var(--c-white); color: var(--c-black); }
-.nav-status {
-  margin-top: auto;
-  padding: var(--sp-15) 0;
-  font-size: var(--sz-10);
-  color: var(--c-light-gray);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-6);
-  border-top: var(--border-white);
-}
-.nav-status span { writing-mode: vertical-rl; }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: #555; }
-.dot.online { background: #22c55e; }
-
-/* VIEWS LAYOUT */
-.view { display: none; height: 100vh; width: 100%; }
-.view.active { display: block; }
-
-/* ────────────────────────────────────────────────────────
-   VIEW 1: THƯ VIỆN (LIST VIEW BẢN MỚI)
-   ──────────────────────────────────────────────────────── */
-#view-list {
-  padding: var(--sp-15);
-  overflow-y: auto;
-}
-.search-bar {
-  display: flex;
-  align-items: center;
-  border: var(--border-white);
-  margin-bottom: var(--sp-15);
-  background: var(--c-black);
-}
-.search-bar .slbl {
-  padding: var(--sp-12);
-  font-size: var(--sz-10);
-  font-weight: 800;
-  text-transform: uppercase;
-  border-right: var(--border-white);
-}
-.search-bar input, .search-bar select {
-  background: transparent;
-  border: none;
-  color: var(--c-white);
-  padding: var(--sp-12);
-  font-family: var(--font-main);
-  font-size: var(--sz-15);
-  outline: none;
-}
-.search-bar select {
-  border-right: var(--border-white);
-  cursor: pointer;
-}
-.list-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--sp-12);
-}
-.l-card {
-  border: var(--border-white);
-  padding: var(--sp-15);
-  cursor: pointer;
-  background: var(--c-black);
-  transition: background 0.2s;
-}
-.l-card:hover { background: var(--c-dark-gray); }
-.l-cat { font-size: var(--sz-10); color: var(--c-light-gray); text-transform: uppercase; margin-bottom: var(--sp-6); }
-.l-name { font-size: var(--sz-20); font-weight: 800; margin-bottom: var(--sp-6); }
-.l-meta { font-size: var(--sz-15); color: var(--c-light-gray); }
-
-/* ────────────────────────────────────────────────────────
-   VIEW 2: CHI TIẾT NGHIÊN CỨU (DASHBOARD ĐÚNG THEO HÌNH VẼ)
-   ──────────────────────────────────────────────────────── */
-.dashboard-layout {
-  display: grid;
-  /* Phân bổ tỷ lệ các cột từ trái qua phải tương tự hình ảnh */
-  grid-template-columns: 280px 240px 1fr 340px;
-  height: 100vh;
-  width: 100%;
-  background: var(--c-black);
-}
-
-/* Các đường viền đứng phân chia cột chính */
-.dash-col {
-  border-right: var(--border-white);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.dash-col:last-child {
-  border-right: none;
-}
-
-/* CỘT 1: THÔNG TIN CƠ BẢN VÀ CÁC TAB KHỐI TRÁI */
-.col-left-meta {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Khối Tên công trình & studio */
-.meta-title-section {
-  padding: var(--sp-15);
-  border-bottom: var(--border-white);
-}
-.project-title {
-  font-size: var(--sz-30);
-  font-weight: 900;
-  line-height: 1.1;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  margin-bottom: var(--sp-15);
-}
-.meta-row-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-12);
-  margin-bottom: var(--sp-12);
-}
-.meta-row-item:last-child { margin-bottom: 0; }
-.meta-badge {
-  background: var(--c-white);
-  color: var(--c-black);
-  font-size: var(--sz-10);
-  font-weight: 900;
-  padding: var(--sp-3) var(--sp-6);
-  min-width: 35px;
-  text-align: center;
-}
-.meta-label-group {
-  display: flex;
-  flex-direction: column;
-}
-.meta-lbl { font-size: var(--sz-10); color: var(--c-light-gray); text-transform: uppercase; }
-.meta-val { font-size: var(--sz-15); font-weight: 600; text-transform: uppercase; }
-
-/* Khối THÔNG TIN xếp dọc ở giữa */
-.info-tabs-section {
-  padding: var(--sp-15);
-  border-bottom: var(--border-white);
-}
-.section-title-20 {
-  font-size: var(--sz-20);
-  font-weight: 800;
-  text-transform: uppercase;
-  margin-bottom: var(--sp-12);
-  letter-spacing: -0.01em;
-}
-.tab-stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-6);
-}
-.tab-row-btn {
-  width: 100%;
-  background: var(--c-white);
-  color: var(--c-black);
-  border: none;
-  padding: var(--sp-12);
-  font-family: var(--font-main);
-  font-size: var(--sz-15);
-  font-weight: 800;
-  text-transform: uppercase;
-  text-align: center;
-  cursor: pointer;
-}
-
-/* Khối Bảng thông số kỹ thuật ở dưới cùng */
-.specs-section {
-  padding: var(--sp-15);
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-.specs-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.specs-table td {
-  border: var(--border-white);
-  padding: var(--sp-12);
-  font-size: var(--sz-15);
-  font-weight: 600;
-  text-transform: uppercase;
-}
-.specs-table td:first-child {
-  background: var(--c-dark-gray);
-  width: 55%;
-}
-.specs-table td:last-child {
-  text-align: center;
-}
-
-/* CỘT 2: BA Ô PHẦN TỬ DỌC (YẾU TỐ 1, 2, 3) */
-.col-factors-stack {
-  display: grid;
-  grid-template-rows: repeat(3, 1fr); /* Chia đều thành 3 phần bằng nhau dọc màn hình */
-}
-.factor-card {
-  border-bottom: var(--border-white);
-  padding: var(--sp-12);
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.factor-card:last-child { border-bottom: none; }
-.factor-card:hover, .factor-card.active { background: var(--c-dark-gray); }
-.factor-preview-box {
-  background-color: var(--c-med-gray);
-  flex-grow: 1;
-  margin: var(--sp-6) 0;
-  border: 1px solid #444;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  position: relative;
-}
-.factor-preview-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.factor-footer-text {
-  font-size: var(--sz-10);
-  color: var(--c-light-gray);
-  text-transform: uppercase;
-}
-
-/* CỘT 3: KHÔNG GIAN HIỂN THỊ YẾU TỐ CHÍNH TRUNG TÂM */
-.col-main-display {
-  padding: var(--sp-15);
-  display: flex;
-  flex-direction: column;
-}
-.center-top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--sp-12);
-}
-.center-title-20 {
-  font-size: var(--sz-20);
-  font-weight: 800;
-  line-height: 1.1;
-  text-transform: uppercase;
-}
-.center-desc-10 {
-  font-size: var(--sz-10);
-  color: var(--c-light-gray);
-  text-align: right;
-  line-height: 1.4;
-  max-width: 60%;
-}
-.center-content-canvas {
-  flex-grow: 1;
-  background-color: var(--c-dark-gray);
-  border: var(--border-white);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-}
-.canvas-inner-render {
-  width: 100%;
-  height: calc(100% - 40px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--sp-15);
-}
-/* Thiết kế khung ảnh theo tỷ lệ khổ giấy in ấn */
-.canvas-print-frame {
-  max-width: 100%;
-  max-height: 100%;
-  box-shadow: 0 0 20px rgba(255,255,255,0.05);
-  border: 1px solid #444;
-  background: #000;
-}
-.canvas-text-render {
-  font-size: var(--sz-15);
-  line-height: 1.6;
-  padding: var(--sp-15);
-  overflow-y: auto;
-  width: 100%;
-  height: 100%;
-}
-/* Dải 6 ô vuông chia đều ở đáy khối trung tâm đúng theo hình vẽ */
-.center-bottom-segments {
-  height: 40px;
-  border-top: var(--border-white);
+/* GRID LAYOUT CHI TIẾT 6x3 TOÀN TRANG */
+.detail-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  height: calc(100vh - 36px);
+  background: var(--white);
+  border-left: 1px solid var(--border);
 }
-.segment-box {
-  border-right: var(--border-white);
-}
-.segment-box:last-child { border-right: none; }
 
-/* CỘT 4: DANH SÁCH LIÊN KẾT PHẢI (VẬT LIỆU, CHI TIẾT, NỘI THẤT) */
-.col-right-links {
-  display: grid;
-  grid-template-rows: repeat(3, 1fr); /* 3 nhóm liên kết chia đều dọc màn hình */
+.g-block{
+  border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:16px;
+  position:relative;
+  overflow:hidden;
+  transition: background .1s;
 }
-.link-section-group {
-  border-bottom: var(--border-white);
-  padding: var(--sp-12);
-  display: flex;
-  gap: var(--sp-12);
-  overflow: hidden;
+/* Thiết lập mặc định các khối màu đen trên nền trắng */
+.g-block {background:var(--black);color:var(--white)}
+.blk-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#888;margin-bottom:6px}
+.blk-title{font-size:13px;font-weight:bold;letter-spacing:.02em;margin-bottom:8px;line-height:1.3}
+.blk-body{font-size:11px;line-height:1.75;color:#ccc}
+
+/* PHÓNG TO TOÀN MÀN HÌNH (ZOOM FULLSCREEN) */
+.g-block.zoomed {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 99999 !important;
+  margin: 0 !important;
+  padding: 40px !important;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background: var(--black) !important;
+  border: none !important;
 }
-.link-section-group:last-child { border-bottom: none; }
-.link-vertical-title {
-  font-size: var(--sz-20);
-  font-weight: 900;
+.g-block.zoomed .blk-title {
+  font-size: 24px !important;
+  margin-bottom: 20px;
+}
+.g-block.zoomed .blk-body {
+  font-size: 14px !important;
+  line-height: 2;
+  color: #fff !important;
+}
+.close-fs-btn {
+  display: none;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--white);
+  color: var(--black);
+  border: none;
+  padding: 8px 16px;
+  font-family: var(--font);
+  font-size: 10px;
   text-transform: uppercase;
-  width: 30px;
-  word-break: break-all;
-  line-height: 1;
-  padding-top: var(--sp-3);
+  letter-spacing: .1em;
+  cursor: pointer;
+  font-weight: bold;
 }
-.link-matrix-grid {
-  flex-grow: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* Hệ lưới 2 cột nhỏ đặt cạnh nhau */
-  grid-template-rows: repeat(4, 1fr);
-  gap: var(--sp-3);
+.g-block.zoomed .close-fs-btn {
+  display: block;
 }
-.matrix-item {
-  border: var(--border-white);
-  background: var(--c-black);
-  padding: var(--sp-3) var(--sp-6);
+
+/* CHIPS */
+.chip{display:inline-block;border:1px solid var(--white);padding:2px 8px;font-size:9px;letter-spacing:.05em;margin:2px 2px 0 0;cursor:pointer;text-transform:uppercase;color:var(--white);background:transparent;transition:all .1s}
+.chip:hover{background:var(--white);color:var(--black)}
+
+/* LIST VIEW */
+.search-bar{border-bottom:1px solid var(--border);display:flex;align-items:center}
+.search-bar input,.search-bar select{border:none;border-right:1px solid var(--border);padding:8px 12px;font-family:var(--font);font-size:11px;background:var(--white);outline:none}
+.search-bar select{width:150px}
+.search-bar .slbl{padding:8px 12px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#999}
+.list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));border-left:1px solid var(--border);border-top:1px solid var(--border)}
+.l-card{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px;cursor:pointer;transition:background .1s}
+.l-card:hover{background:var(--gray)}
+.l-cat{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-bottom:5px}
+.l-name{font-size:14px;font-weight:bold;margin-bottom:7px;letter-spacing:.02em}
+.l-meta{font-size:10px;color:#666;line-height:1.8}
+.l-tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:3px}
+.l-tag{font-size:9px;border:1px solid #ccc;padding:1px 6px;letter-spacing:.05em;text-transform:uppercase;color:#888}
+.empty{padding:32px;color:#999;font-size:11px;grid-column:1/-1;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+
+/* FORM VIEW */
+.form-wrap{max-width:700px;margin:0 auto;padding:24px 16px}
+.fsec{border:1px solid var(--border);margin-bottom:14px}
+.fsec-hd{background:var(--black);color:var(--white);padding:7px 12px;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+.fbody{padding:14px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.frow1{margin-bottom:10px}
+.flbl{display:block;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:3px}
+input[type=text],textarea,select{width:100%;border:1px solid var(--border);padding:7px 9px;font-family:var(--font);font-size:11px;background:var(--white);outline:none;border-radius:0;color:var(--black);resize:vertical}
+input:focus,textarea:focus,select:focus{background:var(--gray)}
+.save-btn{width:100%;padding:11px;background:var(--black);color:var(--white);border:none;font-family:var(--font);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .15s}
+.save-btn:hover{background:#222}
+.save-btn:disabled{background:#888;cursor:not-allowed}
+
+.block-builder{border:1px solid #ddd;margin-bottom:10px}
+.block-builder-hd{background:var(--gray);padding:5px 10px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;color:var(--black)}
+.block-builder-body{padding:10px}
+.add-block-btn{border:1px dashed #ccc;width:100%;padding:8px;background:transparent;font-family:var(--font);font-size:10px;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;margin-top:6px;color:#888;transition:all .15s}
+.add-block-btn:hover{border-color:var(--black);color:var(--black)}
+.rm-btn{border:none;background:transparent;cursor:pointer;font-size:12px;color:#888;padding:0 4px}
+.rm-btn:hover{color:var(--black)}
+
+.size-row,.color-row{display:none !important} /* Ẩn các bộ cấu hình size/color cũ vì hiện tại đã fix cứng theo layout 6x3 */
+
+.back-btn{display:inline-block;padding:6px 14px;border:1px solid var(--border);font-family:var(--font);font-size:9px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin:10px;background:transparent}
+.back-btn:hover{background:var(--black);color:var(--white)}
+
+.detail-actions{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:0}
+.act-btn{padding:7px 16px;border:none;border-right:1px solid var(--border);background:transparent;font-family:var(--font);font-size:9px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.act-btn:hover{background:var(--gray)}
+.act-btn.danger:hover{background:#fee2e2;color:#991b1b}
+
+.loading{padding:24px;color:#999;font-size:11px;letter-spacing:.05em;text-transform:uppercase;text-align:center}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--black);color:var(--white);padding:10px 18px;font-size:11px;letter-spacing:.05em;opacity:0;transition:opacity .2s;z-index:999999;pointer-events:none}
+#toast.show{opacity:1}
+
+/* Định dạng phụ trợ cho khối hình ảnh bên trái */
+.img-placeholder-wrap {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  cursor: pointer;
+  height: 100%;
+  gap: 12px;
+  justify-content: space-between;
 }
-.matrix-item:hover { background: var(--c-dark-gray); }
-.matrix-item.active { background: var(--c-white); color: var(--c-black); }
-.matrix-code { font-size: var(--sz-10); font-weight: 800; line-height: 1.1; }
-.matrix-name { font-size: var(--sz-10); color: var(--c-light-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.matrix-item.active .matrix-name { color: #444; }
-.matrix-more-badge {
-  background: var(--c-med-gray);
-  color: var(--c-white);
-  font-size: var(--sz-15);
-  font-weight: 800;
+.img-box {
+  flex: 1;
+  border: 1px dashed #444;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: var(--border-white);
-}
-
-/* ────────────────────────────────────────────────────────
-   VIEW 3: FORM THÊM MỚI / CHỈNH SỬA
-   ──────────────────────────────────────────────────────── */
-#view-add {
-  padding: var(--sp-15);
-  overflow-y: auto;
-}
-.form-container {
-  max-width: 800px;
-  margin: 0 auto;
-  border: var(--border-white);
-  padding: var(--sp-15);
-  background: var(--c-black);
-}
-.form-field {
-  margin-bottom: var(--sp-12);
-}
-.form-field label {
-  display: block;
-  font-size: var(--sz-10);
+  font-size: 9px;
+  color: #666;
   text-transform: uppercase;
-  margin-bottom: var(--sp-3);
-  color: var(--c-light-gray);
+  letter-spacing: .05em;
 }
-.form-field input, .form-field textarea, .form-field select {
-  width: 100%;
-  background: var(--c-dark-gray);
-  border: var(--border-white);
-  color: var(--c-white);
-  padding: var(--sp-12);
-  font-family: var(--font-main);
-  font-size: var(--sz-15);
-  outline: none;
-}
-.form-submit-btn {
-  background: var(--c-white);
-  color: var(--c-black);
-  font-weight: 800;
-  border: none;
-  width: 100%;
-  padding: var(--sp-15);
-  font-family: var(--font-main);
-  font-size: var(--sz-15);
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-/* TOAST NOTIFICATION */
-#toast {
-  position: fixed;
-  bottom: var(--sp-15);
-  left: var(--sp-15);
-  background: var(--c-white);
-  color: var(--c-black);
-  padding: var(--sp-12) var(--sp-15);
-  font-size: var(--sz-15);
-  font-weight: 600;
-  z-index: 999;
-  display: none;
-  border: var(--border-white);
-}
-
-/* BACK BUTTON TRÊN TRANG DETAIL */
-.back-floating-btn {
-  background: transparent;
-  color: var(--c-white);
-  border: var(--border-white);
-  padding: var(--sp-6) var(--sp-12);
-  font-size: var(--sz-10);
-  text-transform: uppercase;
-  cursor: pointer;
-  margin-bottom: var(--sp-6);
-  font-family: var(--font-main);
-}
-.back-floating-btn:hover { background: var(--c-white); color: var(--c-black); }
 </style>
 </head>
 <body>
 
 <div id="toast"></div>
 
-<!-- THANH ĐIỀU HƯỚNG FIXED PHẢI MÀN HÌNH -->
 <div class="nav">
-  <div class="nav-logo">
-    <img src="logo.jpg" alt="Logo" class="logo-img">
-  </div>
+  <div class="nav-logo">CHOA</div>
   <button class="nav-btn active" id="nb-list" onclick="goView('list')">Thư viện</button>
-  <button class="nav-btn" id="nb-add" onclick="startAdd()">+ Thêm mục</button>
-  <button class="nav-btn" id="nb-det" onclick="goView('detail')" style="display:none">Chi tiết</button>
-  <div class="nav-status">
-    <div class="dot" id="status-dot"></div>
-    <span id="status-txt">ĐỒNG BỘ</span>
-  </div>
+  <button class="nav-btn" id="nb-add" onclick="startAdd()">+ Thêm mới</button>
+  <button class="nav-btn" id="nb-det" onclick="goView('detail')" style="display:none">↩ Chi tiết</button>
+  <div class="nav-status"><div class="dot" id="status-dot"></div><span id="status-txt">Đang kết nối...</span></div>
 </div>
 
-<!-- ────────────────────────────────────────────────────────
-     GIAO DIỆN 1: DANH SÁCH THƯ VIỆN
-     ──────────────────────────────────────────────────────── -->
 <div class="view active" id="view-list">
   <div class="search-bar">
-    <span class="slbl">Bộ lọc</span>
+    <span class="slbl">Lọc:</span>
     <select id="fcat" onchange="renderList()">
-      <option value="all">Tất cả tư liệu</option>
-      <option value="ct">Công trình nghiên cứu</option>
-      <option value="vl">Hệ thống vật liệu</option>
-      <option value="cd">Chi tiết cấu tạo</option>
+      <option value="all">Tất cả</option>
+      <option value="ct">Công trình</option>
+      <option value="vl">Vật liệu</option>
+      <option value="cd">Chi tiết thi công</option>
     </select>
-    <input type="text" id="fsearch" placeholder="Gõ từ khóa để tìm kiếm..." oninput="renderList()" style="flex:1">
+    <input type="text" id="fsearch" placeholder="Tìm kiếm..." oninput="renderList()" style="flex:1;border:none;border-right:1px solid var(--border)">
   </div>
-  <div class="list-grid" id="list-grid"></div>
+  <div class="list-grid" id="list-grid"><div class="loading">Đang tải...</div></div>
 </div>
 
-<!-- ────────────────────────────────────────────────────────
-     GIAO DIỆN 2: BẢNG NGHIÊN CỨU CÔNG TRÌNH CỐ ĐỊNH (6x3 DASHBOARD)
-     ──────────────────────────────────────────────────────── -->
 <div class="view" id="view-detail">
-  <div style="padding: var(--sp-12) 0 0 var(--sp-15);">
-    <button class="back-floating-btn" onclick="goView('list')">← QUAY LẠI THƯ VIỆN</button>
+  <div style="display:flex;align-items:center;border-bottom:1px solid var(--border)">
+    <button class="back-btn" style="margin:0;border:none;border-right:1px solid var(--border)" onclick="goView('list')">← Quay lại</button>
+    <div class="detail-actions" style="border-bottom:none;flex:1">
+      <button class="act-btn" onclick="startEdit()">✎ Chỉnh sửa</button>
+      <button class="act-btn danger" onclick="deleteEntry()">✕ Xoá</button>
+    </div>
   </div>
-  
-  <div class="dashboard-layout" id="dashboard-content-canvas">
-    <!-- Nội dung Dashboard được sinh động bởi JavaScript dựa theo hình ảnh cấu trúc -->
-  </div>
+  <div id="grid-canvas" class="detail-grid"></div>
 </div>
 
-<!-- ────────────────────────────────────────────────────────
-     GIAO DIỆN 3: FORM NHẬP LIỆU DỮ LIỆU
-     ──────────────────────────────────────────────────────── -->
 <div class="view" id="view-add">
-  <div class="form-container">
-    <div class="section-title-20" id="form-mode-title">Thêm mục nghiên cứu mới</div>
-    
-    <div class="form-field">
-      <label>Phân loại danh mục nghiên cứu</label>
-      <select id="etype">
-        <option value="ct">Công trình kiến trúc</option>
-        <option value="vl">Vật liệu & Bề mặt</option>
-        <option value="cd">Chi tiết cấu tạo & Liên kết</option>
-      </select>
-    </div>
-    
-    <div class="form-field">
-      <label>Tên mục nghiên cứu (Tên công trình / Vật liệu)*</label>
-      <input type="text" id="e-ten" placeholder="Nhập tên chính xác...">
-    </div>
-    
-    <div class="form-field">
-      <label>Chủ trì / Studio Thiết kế</label>
-      <input type="text" id="e-kts" placeholder="Ví dụ: OMA, Kengo Kuma & Associates...">
+  <div class="form-wrap">
+    <div id="form-mode-label" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-bottom:14px"></div>
+
+    <div class="fsec">
+      <div class="fsec-hd">Loại mục</div>
+      <div class="fbody">
+        <div class="frow1">
+          <label class="flbl">Chọn loại</label>
+          <select id="etype" onchange="toggleFormSections()">
+            <option value="ct">Công trình</option>
+            <option value="vl">Vật liệu</option>
+            <option value="cd">Chi tiết thi công</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <div class="form-field">
-      <label>Quốc gia / Địa điểm</label>
-      <input type="text" id="e-vitri" placeholder="Ví dụ: Nhật Bản, Pháp, Hà Nội...">
+    <div id="f-ct">
+      <div class="fsec"><div class="fsec-hd">Thông tin cơ bản</div><div class="fbody">
+        <div class="frow">
+          <div><label class="flbl">Tên công trình *</label><input type="text" id="ct-ten"></div>
+          <div><label class="flbl">KTS / Đơn vị thiết kế</label><input type="text" id="ct-kts"></div>
+        </div>
+        <div class="frow">
+          <div><label class="flbl">Năm hoàn thành</label><input type="text" id="ct-nam"></div>
+          <div><label class="flbl">Vị trí</label><input type="text" id="ct-vitri"></div>
+        </div>
+        <div class="frow">
+          <div><label class="flbl">Phong cách</label><input type="text" id="ct-pc"></div>
+          <div><label class="flbl">Diện tích (m²)</label><input type="text" id="ct-dt"></div>
+        </div>
+      </div></div>
+      <div class="fsec"><div class="fsec-hd">Nội dung nghiên cứu — các block (Tối đa 4)</div><div class="fbody">
+        <div id="ct-blocks-wrap"></div>
+        <button type="button" class="add-block-btn" onclick="addBlock('ct')">+ Thêm block thông tin</button>
+      </div></div>
+      <div class="fsec"><div class="fsec-hd">Liên kết</div><div class="fbody">
+        <div class="frow1"><label class="flbl">Vật liệu liên quan (phân cách dấu phẩy)</label><input type="text" id="ct-vl"></div>
+        <div class="frow1"><label class="flbl">Chi tiết thi công liên quan</label><input type="text" id="ct-cd"></div>
+      </div></div>
     </div>
 
-    <div class="form-field">
-      <label>Thể loại công trình / Nhóm cấu tạo</label>
-      <input type="text" id="e-theloai" placeholder="Ví dụ: Nhà ở, Bảo tàng, Cấu tạo mái...">
+    <div id="f-vl" style="display:none">
+      <div class="fsec"><div class="fsec-hd">Thông tin vật liệu</div><div class="fbody">
+        <div class="frow">
+          <div><label class="flbl">Tên vật liệu *</label><input type="text" id="vl-ten"></div>
+          <div><label class="flbl">Loại</label><input type="text" id="vl-loai" placeholder="Kính, gỗ, bê tông..."></div>
+        </div>
+      </div></div>
+      <div class="fsec"><div class="fsec-hd">Nội dung nghiên cứu — các block (Tối đa 4)</div><div class="fbody">
+        <div id="vl-blocks-wrap"></div>
+        <button type="button" class="add-block-btn" onclick="addBlock('vl')">+ Thêm block thông tin</button>
+      </div></div>
+      <div class="fsec"><div class="fsec-hd">Liên kết</div><div class="fbody">
+        <div class="frow1"><label class="flbl">Công trình đã dùng vật liệu này</label><input type="text" id="vl-ct"></div>
+      </div></div>
     </div>
 
-    <div class="form-field">
-      <label>Phong cách kiến trúc / Đặc trưng lý thuyết</label>
-      <input type="text" id="e-pc" placeholder="Ví dụ: Brutalism, Minimalism, Bản địa hóa...">
+    <div id="f-cd" style="display:none">
+      <div class="fsec"><div class="fsec-hd">Thông tin chi tiết thi công</div><div class="fbody">
+        <div class="frow">
+          <div><label class="flbl">Tên chi tiết *</label><input type="text" id="cd-ten"></div>
+          <div><label class="flbl">Vị trí áp dụng</label><input type="text" id="cd-vitri" placeholder="Mái, sàn, vách..."></div>
+        </div>
+      </div></div>
+      <div class="fsec"><div class="fsec-hd">Nội dung nghiên cứu — các block (Tối đa 4)</div><div class="fbody">
+        <div id="cd-blocks-wrap"></div>
+        <button type="button" class="add-block-btn" onclick="addBlock('cd')">+ Thêm block thông tin</button>
+      </div></div>
+      <div class="fsec"><div class="fsec-hd">Liên kết</div><div class="fbody">
+        <div class="frow">
+          <div><label class="flbl">Vật liệu liên quan</label><input type="text" id="cd-vl"></div>
+          <div><label class="flbl">Công trình liên quan</label><input type="text" id="cd-ct"></div>
+        </div>
+      </div></div>
     </div>
 
-    <div class="form-field">
-      <label>Đường dẫn ảnh Ngoại thất (URL)</label>
-      <input type="text" id="e-img-ngoai" placeholder="https://url-anh-ngoai-that.jpg">
-    </div>
-
-    <div class="form-field">
-      <label>Đường dẫn ảnh Nội thất (URL)</label>
-      <input type="text" id="e-img-noi" placeholder="https://url-anh-noi-that.jpg">
-    </div>
-
-    <div class="form-field">
-      <label>Đường dẫn ảnh Mặt bằng / Bản vẽ kỹ thuật (URL)</label>
-      <input type="text" id="e-img-banve" placeholder="https://url-anh-ban-ve.jpg">
-    </div>
-
-    <div class="form-field">
-      <label>Văn bản phân tích / Ghi chú lý thuyết chi tiết</label>
-      <textarea id="e-body" rows="6" placeholder="Nhập các phân tích lý thuyết chuyên sâu..."></textarea>
-    </div>
-
-    <button class="form-submit-btn" onclick="saveEntry()">LƯU DỮ LIỆU VÀO THƯ VIỆN →</button>
+    <button class="save-btn" id="save-btn" onclick="saveEntry()">Lưu vào thư viện →</button>
   </div>
 </div>
 
 <script>
-/* ── THIẾT LẬP KẾT NỐI DATABASE SUPABASE ── */
+/* ── SUPABASE ── */
 const SUPA_URL = 'https://mensqirmgksktrjdnyqi.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lbnNxaXJtZ2tza3RyamRueXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NjMwMDQsImV4cCI6MjA5NzMzOTAwNH0.R78C7oDxHv3EXq8EH88PiD2-ibOJbuWo7B2o3-2R9ok';
 const { createClient } = supabase;
 const db = createClient(SUPA_URL, SUPA_KEY);
 
+/* ── STATE ── */
 let entries = [];
 let currentId = null;
+let editMode = false;
 
-async function init() {
+/* ── INIT ── */
+async function init(){
   try {
-    const { data, error } = await db.from('entries').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
+    const {data,error} = await db.from('entries').select('*').order('created_at',{ascending:false});
+    if(error) throw error;
     entries = data || [];
-    setOnlineStatus(true);
+    setStatus(true);
     renderList();
-  } catch (e) {
-    setOnlineStatus(false);
-    showToast('Lỗi tải dữ liệu Supabase: ' + e.message);
+  } catch(e){
+    setStatus(false);
+    toast('Lỗi kết nối Supabase: '+e.message);
+    renderList();
   }
 }
 
-function setOnlineStatus(isOnline) {
-  document.getElementById('status-dot').className = 'dot' + (isOnline ? ' online' : '');
-  document.getElementById('status-txt').textContent = isOnline ? 'ĐỒNG BỘ' : 'OFFLINE';
+function setStatus(online){
+  document.getElementById('status-dot').className = 'dot'+(online?' online':'');
+  document.getElementById('status-txt').textContent = online?'Đã kết nối':'Offline';
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.display = 'block';
-  setTimeout(() => t.style.display = 'none', 3000);
+function toast(msg,duration=2500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),duration);
 }
 
-function goView(v) {
-  ['list', 'detail', 'add'].forEach(x => {
-    document.getElementById('view-' + x).classList.toggle('active', x === v);
-    const btn = document.getElementById('nb-' + x);
-    if (btn) btn.classList.toggle('active', x === v);
+function goView(v){
+  ['list','detail','add'].forEach(x=>{
+    document.getElementById('view-'+x).classList.toggle('active',x===v);
+    const nb=document.getElementById('nb-'+x);
+    if(nb) nb.classList.toggle('active',x===v);
   });
-  document.getElementById('nb-det').style.display = (v === 'detail') ? '' : 'none';
+  const detBtn=document.getElementById('nb-det');
+  detBtn.style.display=v==='detail'?'':'none';
+  if(v==='list') renderList();
 }
 
-/* RENDER DANH SÁCH TƯ LIỆU */
-function renderList() {
-  const cat = document.getElementById('fcat').value;
-  const q = document.getElementById('fsearch').value.toLowerCase();
-  const grid = document.getElementById('list-grid');
-  
-  const filtered = entries.filter(e => (cat === 'all' || e.type === cat) && (!q || e.ten.toLowerCase().includes(q)));
-  
-  if (!filtered.length) {
-    grid.innerHTML = `<div style="padding: var(--sp-15); color: var(--c-light-gray);">Không tìm thấy dữ liệu phù hợp.</div>`;
+/* ── LIST RENDER ── */
+function catLabel(t){return t==='ct'?'Công trình':t==='vl'?'Vật liệu':'Chi tiết thi công'}
+
+function renderList(){
+  const cat=document.getElementById('fcat').value;
+  const q=(document.getElementById('fsearch').value||'').toLowerCase();
+  const grid=document.getElementById('list-grid');
+  const items=entries.filter(e=>(cat==='all'||e.type===cat)&&(!q||(e.ten||'').toLowerCase().includes(q)));
+  if(!items.length){
+    grid.innerHTML='<div class="empty">Chưa có dữ liệu. Nhấn "+ Thêm mới" để bắt đầu.</div>';
     return;
   }
-  
-  grid.innerHTML = filtered.map(e => `
-    <div class="l-card" onclick="showDetail('${e.id}')">
-      <div class="l-cat">${e.type === 'ct' ? 'Công trình' : e.type === 'vl' ? 'Vật liệu' : 'Cấu tạo'}</div>
+  grid.innerHTML=items.map(e=>{
+    const meta=e.meta||{};
+    const blocks=e.blocks||[];
+    const links=e.links||{};
+    let sub='';
+    if(e.type==='ct') sub=`${meta.kts||''} ${meta.kts&&meta.nam?'·':''} ${meta.nam||''} ${meta.vitri?'· '+meta.vitri:''}`.trim();
+    if(e.type==='vl') sub=`${meta.loai||''} ${blocks.length?'· '+blocks.map(b=>b.label).join(', '):''}`.trim();
+    if(e.type==='cd') sub=`${meta.vitri||''} ${blocks.length?'· '+blocks.map(b=>b.label).join(', '):''}`.trim();
+    const allLinks=[...(links.vl||'').split(','),...(links.cd||'').split(','),...(links.ct||'').split(',')].map(s=>s.trim()).filter(Boolean);
+    return `<div class="l-card" onclick="showDetail('${e.id}')">
+      <div class="l-cat">${catLabel(e.type)}</div>
       <div class="l-name">${e.ten}</div>
-      <div class="l-meta">${e.meta?.kts || '—'} · ${e.meta?.vitri || '—'}</div>
-    </div>
-  `).join('');
+      <div class="l-meta">${sub}</div>
+      ${allLinks.length?`<div class="l-tags">${allLinks.slice(0,4).map(l=>`<span class="l-tag">${l}</span>`).join('')}</div>`:''}
+    </div>`;
+  }).join('');
 }
 
-/* ── XỬ LÝ HIGHLIGHT VÀ ĐỔI ẢNH ĐỘNG Ở KHỐI TRUNG TÂM KHI CLICK 3 Ô BÊN TRÁI ── */
-function selectFactor(index, imgUrl, label) {
-  // Highlight phần tử đang chọn ở cột 2
-  document.querySelectorAll('.factor-card').forEach(c => c.classList.remove('active'));
-  const activeCard = document.getElementById(`factor-card-${index}`);
-  if (activeCard) activeCard.classList.add('active');
+/* ── DETAIL VIEW (HỆ LƯỚI 6x3 ĐÚNG CẤU TRÚC MỚI) ── */
+function showDetail(id){
+  const e=entries.find(x=>x.id===id);
+  if(!e) return;
+  currentId=id;
+  const meta=e.meta||{};
+  const blocks=e.blocks||[];
+  const links=e.links||{};
+  let html='';
 
-  // Đổi tiêu đề khối trung tâm chính xác theo yếu tố
-  document.getElementById('center-factor-title').innerHTML = `${label}<br>${label}`;
-  
-  const canvas = document.getElementById('center-canvas-content');
-  if (imgUrl && imgUrl.startsWith('http')) {
-    // Đưa ảnh vào theo khung khổ giấy in cố định
-    canvas.innerHTML = `<img src="${imgUrl}" class="canvas-print-frame" alt="${label}">`;
+  /* 1. CỘT TRONG CÙNG BÊN TRÁI (Cột 1, Hàng 1 -> 3): Tích hợp sẵn Ảnh & Bản vẽ */
+  html+=`<div class="g-block" style="grid-column: 1; grid-row: 1 / 4;">
+    <div class="blk-label">Hồ sơ phương án</div>
+    <div class="blk-title" style="font-size:11px;">Ảnh & Bản vẽ tích hợp</div>
+    <div class="img-placeholder-wrap">
+      <div class="img-box">[ Ảnh Ngoại Thất ]</div>
+      <div class="img-box">[ Ảnh Nội Thất ]</div>
+      <div class="img-box">[ Bản Vẽ Kỹ Thuật ]</div>
+    </div>
+  </div>`;
+
+  /* 2. HÀNG CỐ ĐỊNH 1 (Cột 2 -> 7, Hàng 1): Thông tin cơ bản */
+  let infoBody='';
+  if(e.type==='ct'){
+    infoBody=`<strong>KTS/Thiết kế:</strong> ${meta.kts||'—'} | <strong>Năm:</strong> ${meta.nam||'—'} | <strong>Vị trí:</strong> ${meta.vitri||'—'} | <strong>Phong cách:</strong> ${meta.pc||'—'} | <strong>Diện tích:</strong> ${meta.dt ? meta.dt+' m²' : '—'}`;
+  } else if(e.type==='vl'){
+    infoBody=`<strong>Loại vật liệu:</strong> ${meta.loai||'—'}`;
   } else {
-    // Nếu không có ảnh, kết xuất văn bản phân tích
-    const currentEntry = entries.find(x => x.id === currentId);
-    canvas.innerHTML = `<div class="canvas-text-render">${currentEntry?.body || 'Chưa có tệp hình ảnh được tải lên cho cấu trúc này. Hãy bổ sung URL ảnh ở chế độ chỉnh sửa.'}</div>`;
+    infoBody= `<strong>Vị trí áp dụng thi công:</strong> ${meta.vitri||'—'}`;
+  }
+
+  html+=`<div class="g-block" style="grid-column: 2 / 7; grid-row: 1;">
+    <div class="blk-label">${catLabel(e.type)} cố định</div>
+    <div class="blk-title">${e.ten}</div>
+    <div class="blk-body" style="color:#fff; font-size:12px;">${infoBody}</div>
+  </div>`;
+
+  /* 3. HÀNG CỐ ĐỊNH 2 (Cột 2 -> 7, Hàng 2): Liên kết liên quan */
+  const vlArr=(links.vl||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const cdArr=(links.cd||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const ctArr=(links.ct||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const allChips=[
+    ...vlArr.map(v=>`<span class="chip" onclick="goLinked('${v}','vl')">${v} ↗</span>`),
+    ...cdArr.map(v=>`<span class="chip" onclick="goLinked('${v}','cd')">${v} ↗</span>`),
+    ...ctArr.map(v=>`<span class="chip" onclick="goLinked('${v}','ct')">${v} ↗</span>`)
+  ];
+
+  html+=`<div class="g-block" style="grid-column: 2 / 7; grid-row: 2;">
+    <div class="blk-label">Mạng lưới liên kết sơ đồ</div>
+    <div class="blk-title" style="font-size:11px;">Mục dữ liệu phụ trợ liên quan</div>
+    <div style="margin-top:8px">${allChips.length ? allChips.join('') : '<span style="color:#555">Không có liên kết phụ trợ nào.</span>'}</div>
+  </div>`;
+
+  /* 4. HÀNG 3 (Cột 2 -> 7): Các yếu tố từ 1-4 xếp theo hàng ngang, click phóng to toàn màn hình */
+  for (let i = 0; i < 4; i++) {
+    const b = blocks[i];
+    const colStart = 2 + i; // Khối 1 -> Cột 2, Khối 2 -> Cột 3, Khối 3 -> Cột 4, Khối 4 -> Cột 5
+    const colEnd = (i === 3) ? 7 : colStart + 1; // Khối cuối chiếm đến hết lưới (cột 6)
+
+    if (b) {
+      html+=`<div class="g-block" style="grid-column: ${colStart} / ${colEnd}; grid-row: 3;" onclick="toggleZoomBlock(this, event)">
+        <button class="close-fs-btn" onclick="toggleZoomBlock(this.closest('.g-block'), event)">✕ Đóng màn hình</button>
+        <div class="blk-label">YẾU TỐ THÀNH PHẦN 0${i+1}</div>
+        <div class="blk-title">${b.label || 'Chưa đặt tiêu đề'}</div>
+        <div class="blk-body">${b.body || 'Không có nội dung nghiên cứu.'}</div>
+      </div>`;
+    } else {
+      // Ô trống dự phòng định dạng layout nếu dữ liệu nhập ít hơn 4 block
+      html+=`<div class="g-block" style="grid-column: ${colStart} / ${colEnd}; grid-row: 3; background:#050505; border-color:#111;">
+        <div class="blk-label" style="color:#333">YẾU TỐ THÀNH PHẦN 0${i+1}</div>
+        <div class="blk-title" style="color:#333; font-style:italic;">Trống</div>
+        <div class="blk-body" style="color:#222">Chưa bổ sung block nội dung nghiên cứu.</div>
+      </div>`;
+    }
+  }
+
+  document.getElementById('grid-canvas').innerHTML=html;
+  goView('detail');
+}
+
+/* ── PHÓNG TO / THU NHỎ TOÀN MÀN HÌNH ── */
+function toggleZoomBlock(blockEl, event) {
+  if (event.target.classList.contains('chip') || event.target.tagName === 'A') return;
+  
+  if (blockEl.classList.contains('zoomed')) {
+    event.stopPropagation();
+    blockEl.classList.remove('zoomed');
+    document.body.style.overflow = '';
+  } else {
+    blockEl.classList.add('zoomed');
+    document.body.style.overflow = 'hidden';
   }
 }
 
-/* ── HIỂN THỊ CHI TIẾT THEO CẤU TRÚC DASHBOARD ĐÚNG HÌNH ẢNH ── */
-function showDetail(id) {
-  currentId = id;
-  const e = entries.find(x => x.id === id);
-  if (!e) return;
-
-  const meta = e.meta || {};
-  const links = e.links || {};
-  
-  // Chuẩn bị URL hình ảnh cho 3 ô chức năng
-  const imgNgoai = meta.imgNgoai || '';
-  const imgNoi = meta.imgNoi || '';
-  const imgBanVe = meta.imgBanVe || '';
-
-  const dashboardContainer = document.getElementById('dashboard-content-canvas');
-  
-  dashboardContainer.innerHTML = `
-    <!-- CỘT 1: THÔNG TIN CƠ BẢN VÀ CÁC TAB KHỐI TRÁI -->
-    <div class="dash-col col-left-meta">
-      <div class="meta-title-section">
-        <div class="project-title">${e.ten}<br>${e.ten}</div>
-        
-        <div class="meta-row-item">
-          <span class="meta-badge">ABC</span>
-          <div class="meta-label-group">
-            <span class="meta-lbl">Chủ trì thiết kế</span>
-            <span class="meta-val">${meta.kts || 'CHƯA CẬP NHẬT'}</span>
-          </div>
-        </div>
-        
-        <div class="meta-row-item">
-          <span class="meta-badge">123</span>
-          <div class="meta-label-group">
-            <span class="meta-lbl">Quốc gia</span>
-            <span class="meta-val">${meta.vitri || 'CHƯA CẬP NHẬT'}</span>
-          </div>
-        </div>
-        
-        <div class="meta-row-item">
-          <span class="meta-badge">ABC</span>
-          <div class="meta-label-group">
-            <span class="meta-lbl">Thể loại công trình</span>
-            <span class="meta-val">${meta.theloai || 'CHƯA CẬP NHẬT'}</span>
-          </div>
-        </div>
-        
-        <div class="meta-row-item">
-          <span class="meta-badge">123</span>
-          <div class="meta-label-group">
-            <span class="meta-lbl">Phong cách</span>
-            <span class="meta-val">${meta.pc || 'CHƯA CẬP NHẬT'}</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="info-tabs-section">
-        <div class="section-title-20">THÔNG TIN</div>
-        <div class="tab-stack">
-          <button class="tab-row-btn">THÔNG TIN TỔNG QUAN</button>
-          <button class="tab-row-btn">BÀI HỌC THIẾT KẾ</button>
-          <button class="tab-row-btn">BẢN VẼ PHÂN TÍCH</button>
-          <button class="tab-row-btn">HỒ SƠ KHẢO SÁT</button>
-        </div>
-      </div>
-      
-      <div class="specs-section">
-        <table class="specs-table">
-          <tr><td>DIỆN TÍCH</td><td>450 m²</td></tr>
-          <tr><td>SỐ TẦNG</td><td>03</td></tr>
-          <tr><td>KẾT CẤU</td><td>BÊ TÔNG</td></tr>
-          <tr><td>NĂM</td><td>2026</td></tr>
-          <tr><td>HỆ THỐNG</td><td>MODULAR</td></tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- CỘT 2: BA Ô PHẦN TỬ DỌC (HÀNG BÊN TRÁI ĐỂ CHỌN ẢNH) -->
-    <div class="dash-col col-factors-stack">
-      <div class="factor-card" id="factor-card-1" onclick="selectFactor(1, '${imgNgoai}', 'ẢNH NGOẠI THẤT')">
-        <div class="section-title-20">YẾU TỐ 1</div>
-        <div class="factor-preview-box">
-          ${imgNgoai ? `<img src="${imgNgoai}">` : '<span style="font-size:10px;color:#555">NGOẠI THẤT</span>'}
-        </div>
-        <div class="factor-footer-text">+ SỐ LƯỢNG THÔNG TIN KHÁC</div>
-      </div>
-      
-      <div class="factor-card" id="factor-card-2" onclick="selectFactor(2, '${imgNoi}', 'ẢNH NỘI THẤT')">
-        <div class="section-title-20">YẾU TỐ 2</div>
-        <div class="factor-preview-box">
-          ${imgNoi ? `<img src="${imgNoi}">` : '<span style="font-size:10px;color:#555">NỘI THẤT</span>'}
-        </div>
-        <div class="factor-footer-text">+ SỐ LƯỢNG THÔNG TIN KHÁC</div>
-      </div>
-      
-      <div class="factor-card" id="factor-card-3" onclick="selectFactor(3, '${imgBanVe}', 'HỒ SƠ BẢN VẼ')">
-        <div class="section-title-20">YẾU TỐ 3</div>
-        <div class="factor-preview-box">
-          ${imgBanVe ? `<img src="${imgBanVe}">` : '<span style="font-size:10px;color:#555">BẢN VẼ KỸ THUẬT</span>'}
-        </div>
-        <div class="factor-footer-text">+ SỐ LƯỢNG THÔNG TIN KHÁC</div>
-      </div>
-    </div>
-
-    <!-- CỘT 3: KHỐI HIỂN THỊ YẾU TỐ CHÍNH TRUNG TÂM (CHIẾM DIỆN TÍCH LỚN) -->
-    <div class="dash-col col-main-display">
-      <div class="center-top-bar">
-        <div class="center-title-20" id="center-factor-title">YẾU TỐ 1<br>YẾU TỐ 1</div>
-        <div class="center-desc-10">
-          TƯ LIỆU ĐƯỢC TRÍCH XUẤT TỪ FILE NGHIÊN CỨU THỰC ĐỊA CỦA PHÒNG PHÂN TÍCH CHOA KHÔNG GIAN.<br>
-          NỘI DUNG ĐƯỢC KIỂM ĐỊNH HÌNH ẢNH THEO KHỔ GIẤY TIÊU CHUẨN ĐỒ HỌA KIẾN TRÚC.<br>
-          HỆ THỐNG LIÊN KẾT ĐỒNG BỘ DỮ LIỆU ĐÁM MÂY.
-        </div>
-      </div>
-      
-      <div class="center-content-canvas">
-        <div class="canvas-inner-render" id="center-canvas-content">
-          <!-- Ảnh lớn hoặc nội dung văn bản sẽ tự động chèn vào đây thông qua hàm click -->
-        </div>
-        <!-- 6 phân đoạn đáy giống hệt thiết kế hình mẫu -->
-        <div class="center-bottom-segments">
-          <div class="segment-box"></div>
-          <div class="segment-box"></div>
-          <div class="segment-box"></div>
-          <div class="segment-box"></div>
-          <div class="segment-box"></div>
-          <div class="segment-box"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CỘT 4: DANH SÁCH LIÊN KẾT PHẢI ĐỒNG BỘ (VẬT LIỆU, CHI TIẾT, NỘI THẤT) -->
-    <div class="dash-col col-right-links">
-      <!-- NHÓM 1: VẬT LIỆU -->
-      <div class="link-section-group">
-        <div class="link-vertical-title">VẬT LIỆU</div>
-        <div class="link-matrix-grid">
-          <div class="matrix-item active"><span class="matrix-code">123-BTON-01</span><span class="matrix-name">Bê tông trần</span></div>
-          <div class="matrix-item"><span class="matrix-code">123-GO-04</span><span class="matrix-name">Gỗ tự nhiên</span></div>
-          <div class="matrix-item"><span class="matrix-code">123-KINH-12</span><span class="matrix-name">Kính Low-E</span></div>
-          <div class="matrix-item"><span class="matrix-code">123-THEP-02</span><span class="matrix-name">Thép rỉ Corten</span></div>
-          <div class="matrix-item"><span class="matrix-code">123-DA-09</span><span class="matrix-name">Đá thạch anh</span></div>
-          <div class="matrix-item"><span class="matrix-code">123-NHOM-05</span><span class="matrix-name">Khung nhôm</span></div>
-          <div class="matrix-item"><span class="matrix-code">123-GCH-14</span><span class="matrix-name">Gạch gốm trần</span></div>
-          <div class="matrix-item matrix-more-badge">+5</div>
-        </div>
-      </div>
-
-      <!-- NHÓM 2: CHI TIẾT CẤU TẠO -->
-      <div class="link-section-group">
-        <div class="link-vertical-title">CHI TIẾT</div>
-        <div class="link-matrix-grid">
-          <div class="matrix-item"><span class="matrix-code">456-MAI-02</span><span class="matrix-name">Sênô thu nước</span></div>
-          <div class="matrix-item"><span class="matrix-code">456-SAN-09</span><span class="matrix-name">Khe co giãn sàn</span></div>
-          <div class="matrix-item"><span class="matrix-code">456-VAK-11</span><span class="matrix-name">Vách kính âm sàn</span></div>
-          <div class="matrix-item"><span class="matrix-code">456-CUA-03</span><span class="matrix-name">Chi tiết bản lề</span></div>
-          <div class="matrix-item"><span class="matrix-code">456-TRN-07</span><span class="matrix-name">Trần thạch cao</span></div>
-          <div class="matrix-item"><span class="matrix-code">456-THG-15</span><span class="matrix-name">Bậc thang thép</span></div>
-          <div class="matrix-item"><span class="matrix-code">456-MOG-01</span><span class="matrix-name">Cổ móng công trình</span></div>
-          <div class="matrix-item matrix-more-badge">+12</div>
-        </div>
-      </div>
-
-      <!-- NHÓM 3: NỘI THẤT -->
-      <div class="link-section-group">
-        <div class="link-vertical-title">NỘI THẤT</div>
-        <div class="link-matrix-grid">
-          <div class="matrix-item"><span class="matrix-code">789-GHE-01</span><span class="matrix-name">Ghế Lounge</span></div>
-          <div class="matrix-item"><span class="matrix-code">789-BAN-04</span><span class="matrix-name">Bàn họp gỗ lớn</span></div>
-          <div class="matrix-item"><span class="matrix-code">789-DEN-12</span><span class="matrix-name">Đèn thả tiêu điểm</span></div>
-          <div class="matrix-item"><span class="matrix-code">789-TUK-05</span><span class="matrix-name">Hệ tủ âm tường</span></div>
-          <div class="matrix-item"><span class="matrix-code">789-RE-02</span><span class="matrix-name">Rèm vải thô</span></div>
-          <div class="matrix-item"><span class="matrix-code">789-SOF-03</span><span class="matrix-name">Sofa nỉ khối</span></div>
-          <div class="matrix-item"><span class="matrix-code">789-KE-08</span><span class="matrix-name">Kệ sách âm</span></div>
-          <div class="matrix-item matrix-more-badge">+3</div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  goView('detail');
-  
-  // Tự động kích hoạt hiển thị phần tử thứ nhất ngay khi mở trang chi tiết
-  setTimeout(() => {
-    selectFactor(1, imgNgoai, 'ẢNH NGOẠI THẤT');
-  }, 50);
+/* ── ĐIỀU HƯỚNG LIÊN KẾT ── */
+function goLinked(name,type){
+  const found=entries.find(e=>e.type===type&&(e.ten||'').toLowerCase().includes(name.toLowerCase()));
+  if(found) showDetail(found.id);
+  else toast(`"${name}" chưa có trong thư viện nghiên cứu`);
 }
 
-/* ── QUY TRÌNH THÊM MỚI VÀ LƯU TRỮ DỮ LIỆU ── */
-function startAdd() {
-  currentId = null;
-  document.getElementById('form-mode-title').textContent = 'Thêm mục nghiên cứu mới';
-  document.getElementById('e-ten').value = '';
-  document.getElementById('e-kts').value = '';
-  document.getElementById('e-vitri').value = '';
-  document.getElementById('e-theloai').value = '';
-  document.getElementById('e-pc').value = '';
-  document.getElementById('e-img-ngoai').value = '';
-  document.getElementById('e-img-noi').value = '';
-  document.getElementById('e-img-banve').value = '';
-  document.getElementById('e-body').value = '';
+function toggleFormSections(){
+  const t=document.getElementById('etype').value;
+  ['ct','vl','cd'].forEach(x=>document.getElementById('f-'+x).style.display=x===t?'':'none');
+}
+
+/* ── BLOCK BUILDER FORM ── */
+function addBlock(prefix,data={}){
+  const wrap=document.getElementById(`${prefix}-blocks-wrap`);
+  if(wrap.children.length >= 4) {
+    toast("Hệ thống lưới chỉ hỗ trợ tối đa 4 yếu tố nội dung nghiên cứu!");
+    return;
+  }
+  const uid='blk-'+Date.now()+'-'+Math.random().toString(36).slice(2,5);
+  const div=document.createElement('div');
+  div.className='block-builder';
+  div.dataset.uid=uid;
+  div.innerHTML=`
+    <div class="block-builder-hd">
+      <span>Block thông tin thành phần</span>
+      <button type="button" class="rm-btn" onclick="this.closest('.block-builder').remove()">✕</button>
+    </div>
+    <div class="block-builder-body">
+      <div class="frow1">
+        <label class="flbl">Nhãn / Tiêu đề khối yếu tố</label>
+        <input type="text" class="blk-label-inp" value="${data.label||''}" placeholder="Ví dụ: Cấu trúc mặt đứng, Giải pháp ánh sáng...">
+      </div>
+      <input type="hidden" class="blk-size-inp" value="M">
+      <input type="hidden" class="blk-dark-inp" value="1">
+      <div class="frow1">
+        <label class="flbl">Nội dung chi tiết</label>
+        <textarea class="blk-body-inp" rows="4">${data.body||''}</textarea>
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+}
+
+function collectBlocks(prefix){
+  return [...document.querySelectorAll(`#${prefix}-blocks-wrap .block-builder`)].map(div=>({
+    id:'b'+Date.now()+Math.random().toString(36).slice(2,5),
+    label:div.querySelector('.blk-label-inp').value.trim(),
+    body:div.querySelector('.blk-body-inp').value.trim(),
+    size:'M',
+    dark:true
+  })).filter(b=>b.label||b.body);
+}
+
+/* ── SAVE DỮ LIỆU ── */
+async function saveEntry(){
+  const btn=document.getElementById('save-btn');
+  btn.disabled=true;
+  btn.textContent='Đang lưu...';
+  const type=document.getElementById('etype').value;
+  let ten='',meta={},blocks=[],links={};
+
+  if(type==='ct'){
+    ten=document.getElementById('ct-ten').value.trim();
+    meta={kts:document.getElementById('ct-kts').value.trim(),nam:document.getElementById('ct-nam').value.trim(),vitri:document.getElementById('ct-vitri').value.trim(),pc:document.getElementById('ct-pc').value.trim(),dt:document.getElementById('ct-dt').value.trim()};
+    blocks=collectBlocks('ct');
+    links={vl:document.getElementById('ct-vl').value.trim(),cd:document.getElementById('ct-cd').value.trim()};
+  } else if(type==='vl'){
+    ten=document.getElementById('vl-ten').value.trim();
+    meta={loai:document.getElementById('vl-loai').value.trim()};
+    blocks=collectBlocks('vl');
+    links={ct:document.getElementById('vl-ct').value.trim()};
+  } else {
+    ten=document.getElementById('cd-ten').value.trim();
+    meta={vitri:document.getElementById('cd-vitri').value.trim()};
+    blocks=collectBlocks('cd');
+    links={vl:document.getElementById('cd-vl').value.trim(),ct:document.getElementById('cd-ct').value.trim()};
+  }
+
+  if(!ten){toast('Vui lòng nhập tên mục bắt buộc!');btn.disabled=false;btn.textContent='Lưu vào thư viện →';return;}
+
+  try {
+    if(editMode && currentId){
+      const {error}=await db.from('entries').update({type,ten,meta,blocks,links}).eq('id',currentId);
+      if(error) throw error;
+      const idx=entries.findIndex(x=>x.id===currentId);
+      if(idx>-1) entries[idx]={...entries[idx],type,ten,meta,blocks,links};
+      toast('Đã cập nhật ✓');
+      showDetail(currentId);
+    } else {
+      const id='e'+Date.now();
+      const {error}=await db.from('entries').insert({id,type,ten,meta,blocks,links});
+      if(error) throw error;
+      entries.unshift({id,type,ten,meta,blocks,links});
+      toast('Đã lưu vào thư viện ✓');
+      resetForm();
+      goView('list');
+    }
+  } catch(e){
+    toast('Lỗi: '+e.message);
+  }
+  btn.disabled=false;
+  btn.textContent='Lưu vào thư viện →';
+}
+
+/* ── EDIT / DELETE ── */
+function startAdd(){
+  editMode=false;
+  resetForm();
+  document.getElementById('form-mode-label').textContent='Thêm mục nghiên cứu mới';
   goView('add');
 }
 
-async function saveEntry() {
-  const type = document.getElementById('etype').value;
-  const ten = document.getElementById('e-ten').value.trim();
-  
-  if (!ten) {
-    showToast('Bắt buộc phải nhập tên mục nghiên cứu!');
-    return;
+function startEdit(){
+  const e=entries.find(x=>x.id===currentId);
+  if(!e) return;
+  editMode=true;
+  resetForm();
+  document.getElementById('form-mode-label').textContent='Chỉnh sửa thông tin mục';
+  document.getElementById('etype').value=e.type;
+  toggleFormSections();
+  const meta=e.meta||{};
+  const links=e.links||{};
+  if(e.type==='ct'){
+    document.getElementById('ct-ten').value=e.ten||'';
+    document.getElementById('ct-kts').value=meta.kts||'';
+    document.getElementById('ct-nam').value=meta.nam||'';
+    document.getElementById('ct-vitri').value=meta.vitri||'';
+    document.getElementById('ct-pc').value=meta.pc||'';
+    document.getElementById('ct-dt').value=meta.dt||'';
+    document.getElementById('ct-vl').value=links.vl||'';
+    document.getElementById('ct-cd').value=links.cd||'';
+    (e.blocks||[]).forEach(b=>addBlock('ct',b));
+  } else if(e.type==='vl'){
+    document.getElementById('vl-ten').value=e.ten||'';
+    document.getElementById('vl-loai').value=meta.loai||'';
+    document.getElementById('vl-ct').value=links.ct||'';
+    (e.blocks||[]).forEach(b=>addBlock('vl',b));
+  } else {
+    document.getElementById('cd-ten').value=e.ten||'';
+    document.getElementById('cd-vitri').value=meta.vitri||'';
+    document.getElementById('cd-vl').value=links.vl||'';
+    document.getElementById('cd-ct').value=links.ct||'';
+    (e.blocks||[]).forEach(b=>addBlock('cd',b));
   }
+  goView('add');
+}
 
-  const meta = {
-    kts: document.getElementById('e-kts').value.trim(),
-    vitri: document.getElementById('e-vitri').value.trim(),
-    theloai: document.getElementById('e-theloai').value.trim(),
-    pc: document.getElementById('e-pc').value.trim(),
-    imgNgoai: document.getElementById('e-img-ngoai').value.trim(),
-    imgNoi: document.getElementById('e-img-noi').value.trim(),
-    imgBanVe: document.getElementById('e-img-banve').value.trim()
-  };
-  
-  const body = document.getElementById('e-body').value.trim();
-  const id = 'e' + Date.now();
-
+async function deleteEntry(){
+  if(!confirm('Xoá mục nghiên cứu này khỏi thư viện? Thao tác này không thể hoàn tác.')) return;
   try {
-    const { error } = await db.from('entries').insert({ id, type, ten, meta, body });
-    if (error) throw error;
-    
-    entries.unshift({ id, type, ten, meta, body });
-    showToast('Đã ghi nhận dữ liệu nghiên cứu thành công ✓');
-    renderList();
+    const {error}=await db.from('entries').delete().eq('id',currentId);
+    if(error) throw error;
+    entries=entries.filter(x=>x.id!==currentId);
+    currentId=null;
+    toast('Đã xoá mục dữ liệu');
     goView('list');
-  } catch (e) {
-    showToast('Lỗi hệ thống: ' + e.message);
+  } catch(e){
+    toast('Lỗi hệ thống: '+e.message);
   }
 }
 
-// Khởi tạo chạy ứng dụng
+function resetForm(){
+  ['ct-ten','ct-kts','ct-nam','ct-vitri','ct-pc','ct-dt','ct-vl','ct-cd',
+   'vl-ten','vl-loai','vl-ct','cd-ten','cd-vitri','cd-vl','cd-ct']
+   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['ct','vl','cd'].forEach(p=>{
+    const w=document.getElementById(`${p}-blocks-wrap`);
+    if(w) w.innerHTML='';
+  });
+  document.getElementById('etype').value='ct';
+  toggleFormSections();
+}
+
 init();
 </script>
 </body>
